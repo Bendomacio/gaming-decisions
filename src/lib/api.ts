@@ -13,22 +13,48 @@ export async function fetchPlayers(): Promise<Player[]> {
 }
 
 export async function fetchGames(): Promise<Game[]> {
-  const { data, error } = await supabase
-    .from('games')
-    .select('*')
-    .order('name')
+  // Supabase defaults to 1000 rows; paginate to get all games
+  const all: Game[] = []
+  const PAGE_SIZE = 1000
+  let from = 0
 
-  if (error) throw error
-  return data ?? []
+  while (true) {
+    const { data, error } = await supabase
+      .from('games')
+      .select('*')
+      .order('name')
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) throw error
+    if (!data || data.length === 0) break
+    all.push(...data)
+    if (data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+
+  return all
 }
 
 export async function fetchPlayerGames(): Promise<PlayerGame[]> {
-  const { data, error } = await supabase
-    .from('player_games')
-    .select('*')
+  // Supabase defaults to 1000 rows; paginate to get all
+  const all: PlayerGame[] = []
+  const PAGE_SIZE = 1000
+  let from = 0
 
-  if (error) throw error
-  return data ?? []
+  while (true) {
+    const { data, error } = await supabase
+      .from('player_games')
+      .select('*')
+      .range(from, from + PAGE_SIZE - 1)
+
+    if (error) throw error
+    if (!data || data.length === 0) break
+    all.push(...data)
+    if (data.length < PAGE_SIZE) break
+    from += PAGE_SIZE
+  }
+
+  return all
 }
 
 export async function fetchLatestSync(): Promise<SyncLog | null> {

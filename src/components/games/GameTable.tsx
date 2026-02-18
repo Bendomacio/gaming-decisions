@@ -41,7 +41,6 @@ const columns: ColumnHeader[] = [
   { label: 'Max', width: 'w-[35px]', align: 'center' },
   { label: 'Playing', sortKey: 'current_players', width: 'w-[55px]', align: 'center' },
   { label: 'Steam Reviews', sortKey: 'review_score', width: 'w-[130px]', align: 'left' },
-  { label: 'OpenCritic', width: 'w-[60px]', align: 'center' },
   { label: 'Linux', width: 'w-[70px]', align: 'center' },
   { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center' },
   { label: 'Steam £', sortKey: 'price_asc', width: 'w-[60px]', align: 'center' },

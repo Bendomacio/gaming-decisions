@@ -217,22 +217,6 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
         )}
       </div>
 
-      {/* OpenCritic */}
-      <div className="flex-shrink-0 w-[60px] text-center">
-        {game.opencritic_score !== null ? (
-          <div>
-            <span className="text-xs font-semibold" style={{ color: getReviewColor(game.opencritic_score) }}>
-              {game.opencritic_score}
-            </span>
-            {game.opencritic_tier && (
-              <div className="text-[9px] text-text-muted">{game.opencritic_tier}</div>
-            )}
-          </div>
-        ) : (
-          <span className="text-[10px] text-text-muted">--</span>
-        )}
-      </div>
-
       {/* Proton/Linux */}
       <div className="flex-shrink-0 w-[70px] flex justify-center">
         {game.protondb_rating ? (
