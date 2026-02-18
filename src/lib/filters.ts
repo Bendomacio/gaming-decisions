@@ -59,11 +59,19 @@ export function applyFilters(
   games: GameWithOwnership[],
   filters: FilterState,
   tab: AppTab = 'all',
-  shortlistedIds?: Set<string>
+  shortlistedIds?: Set<string>,
+  excludedIds?: Set<string>
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
     if (!game.supports_linux) return false
     if (game.servers_deprecated) return false
+
+    // Excluded games: hide from all tabs except 'excluded', only show on 'excluded'
+    if (tab === 'excluded') {
+      if (!excludedIds?.has(game.id)) return false
+    } else {
+      if (excludedIds?.has(game.id)) return false
+    }
 
     // Game mode filters
     if (!matchesGameModes(game.categories, filters.gameModes)) return false

@@ -4,6 +4,7 @@ import { Spinner } from '../ui/Spinner'
 import { cn } from '../../lib/utils'
 import type { GameWithOwnership, Player, SortOption } from '../../types'
 import type { ShortlistEntry } from '../../hooks/useShortlist'
+import type { ExcludedEntry } from '../../hooks/useExcludedGames'
 
 interface GameTableProps {
   games: GameWithOwnership[]
@@ -12,12 +13,16 @@ interface GameTableProps {
   loading: boolean
   sortBy: SortOption[]
   shortlistedIds: Set<string>
+  excludedIds: Set<string>
   getShortlistEntry: (gameId: string) => ShortlistEntry | null
+  getExcludedEntry: (gameId: string) => ExcludedEntry | null
   onToggleSortBy: (sort: SortOption) => void
   onGameClick: (game: GameWithOwnership) => void
   onShortlistToggle: (gameId: string) => void
   onShortlistTogglePlayer: (gameId: string, playerName: string) => void
   onShortlistSetReason: (gameId: string, reason: string) => void
+  onExclude: (gameId: string, reason: string, excludedBy: string) => void
+  onRestore: (gameId: string) => void
 }
 
 interface ColumnHeader {
@@ -43,7 +48,7 @@ const columns: ColumnHeader[] = [
   { label: '', width: 'w-6' },                                // steam link
 ]
 
-export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, shortlistedIds, getShortlistEntry, onToggleSortBy, onGameClick, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason }: GameTableProps) {
+export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, shortlistedIds, excludedIds, getShortlistEntry, getExcludedEntry, onToggleSortBy, onGameClick, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason, onExclude, onRestore }: GameTableProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -118,9 +123,13 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
             selectedPlayerIds={selectedPlayerIds}
             isShortlisted={shortlistedIds.has(game.id)}
             shortlistEntry={getShortlistEntry(game.id)}
+            isExcluded={excludedIds.has(game.id)}
+            excludedEntry={getExcludedEntry(game.id)}
             onShortlistToggle={onShortlistToggle}
             onShortlistTogglePlayer={onShortlistTogglePlayer}
             onShortlistSetReason={onShortlistSetReason}
+            onExclude={onExclude}
+            onRestore={onRestore}
             onClick={() => onGameClick(game)}
           />
         ))}

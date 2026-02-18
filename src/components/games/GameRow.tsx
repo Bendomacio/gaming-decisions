@@ -1,4 +1,5 @@
-import { ExternalLink, Clock } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { ExternalLink, Clock, Undo2 } from 'lucide-react'
 import { OwnershipBadges } from '../players/OwnershipBadges'
 import { ShortlistStar } from './ShortlistStar'
 import {
@@ -12,6 +13,7 @@ import {
 } from '../../lib/utils'
 import type { GameWithOwnership, Player } from '../../types'
 import type { ShortlistEntry } from '../../hooks/useShortlist'
+import type { ExcludedEntry } from '../../hooks/useExcludedGames'
 
 interface GameRowProps {
   game: GameWithOwnership
@@ -19,9 +21,13 @@ interface GameRowProps {
   selectedPlayerIds: string[]
   isShortlisted: boolean
   shortlistEntry: ShortlistEntry | null
+  isExcluded: boolean
+  excludedEntry: ExcludedEntry | null
   onShortlistToggle: (gameId: string) => void
   onShortlistTogglePlayer: (gameId: string, playerName: string) => void
   onShortlistSetReason: (gameId: string, reason: string) => void
+  onExclude: (gameId: string, reason: string, excludedBy: string) => void
+  onRestore: (gameId: string) => void
   onClick: () => void
 }
 
@@ -40,14 +46,51 @@ function formatReviewCount(count: number): string {
   return String(count)
 }
 
-export function GameRow({ game, players, selectedPlayerIds, isShortlisted, shortlistEntry, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason, onClick }: GameRowProps) {
+export function GameRow({ game, players, selectedPlayerIds, isShortlisted, shortlistEntry, isExcluded, excludedEntry, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason, onExclude, onRestore, onClick }: GameRowProps) {
   const totalPlaytime = game.owners.reduce((sum, o) => sum + o.playtime_hours, 0)
   const modes = getMultiplayerModes(game.categories)
+  const [showExcludeMenu, setShowExcludeMenu] = useState(false)
+  const [excludeReason, setExcludeReason] = useState('')
+  const [excludeBy, setExcludeBy] = useState('')
+  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 })
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showExcludeMenu) return
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowExcludeMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showExcludeMenu])
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (isExcluded) return
+    setMenuPos({ x: e.clientX, y: e.clientY })
+    setExcludeReason('')
+    setExcludeBy('')
+    setShowExcludeMenu(true)
+  }
+
+  const handleExcludeSubmit = () => {
+    onExclude(game.id, excludeReason, excludeBy)
+    setShowExcludeMenu(false)
+  }
 
   return (
+    <>
     <div
       onClick={onClick}
-      className="group flex items-center gap-3 px-3 py-2 bg-bg-card border border-border rounded-lg hover:bg-bg-card-hover hover:border-border-hover transition-all cursor-pointer"
+      onContextMenu={handleContextMenu}
+      className={cn(
+        "group relative flex items-center gap-3 px-3 py-2 border rounded-lg transition-all cursor-pointer",
+        isExcluded
+          ? "bg-bg-card/50 border-error/20 opacity-60"
+          : "bg-bg-card border-border hover:bg-bg-card-hover hover:border-border-hover"
+      )}
     >
       {/* Shortlist Star */}
       <div className="flex-shrink-0 w-7">
@@ -226,16 +269,89 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
         )}
       </div>
 
-      {/* Steam link */}
-      <a
-        href={getSteamStoreUrl(game.steam_app_id)}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={e => e.stopPropagation()}
-        className="flex-shrink-0 w-6 h-6 rounded-md bg-steam/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-steam"
-      >
-        <ExternalLink size={10} className="text-steam-blue" />
-      </a>
+      {/* Steam link / Restore button */}
+      {isExcluded ? (
+        <button
+          onClick={e => { e.stopPropagation(); onRestore(game.id) }}
+          className="flex-shrink-0 w-6 h-6 rounded-md bg-success/20 flex items-center justify-center hover:bg-success/30 transition-colors cursor-pointer"
+          title="Restore game"
+        >
+          <Undo2 size={10} className="text-success" />
+        </button>
+      ) : (
+        <a
+          href={getSteamStoreUrl(game.steam_app_id)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          className="flex-shrink-0 w-6 h-6 rounded-md bg-steam/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-steam"
+        >
+          <ExternalLink size={10} className="text-steam-blue" />
+        </a>
+      )}
+
+      {/* Excluded reason badge */}
+      {isExcluded && excludedEntry && (
+        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[9px] text-error/70 max-w-[200px] truncate">
+          {excludedEntry.excludedBy && <span className="font-semibold">{excludedEntry.excludedBy}: </span>}
+          {excludedEntry.reason || 'Excluded'}
+        </div>
+      )}
     </div>
+
+    {/* Right-click exclude menu */}
+    {showExcludeMenu && (
+      <div
+        ref={menuRef}
+        className="fixed z-50 bg-bg-secondary border border-border rounded-lg shadow-xl p-3 w-60"
+        style={{ left: menuPos.x, top: menuPos.y }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="text-xs font-semibold text-text-primary mb-2">Exclude "{game.name}"</div>
+
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {players.map(p => (
+            <button
+              key={p.id}
+              onClick={() => setExcludeBy(excludeBy === p.name ? '' : p.name)}
+              className={`px-2 py-0.5 rounded-md text-[11px] border transition-all cursor-pointer ${
+                excludeBy === p.name
+                  ? 'bg-accent-dim text-accent-hover border-border-accent'
+                  : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+              }`}
+            >
+              {p.name}
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="text"
+          placeholder="Reason for excluding..."
+          value={excludeReason}
+          onChange={e => setExcludeReason(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleExcludeSubmit() }}
+          className="w-full bg-bg-input border border-border rounded-md px-2 py-1 text-[11px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-accent transition-colors mb-2"
+          maxLength={100}
+          autoFocus
+        />
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleExcludeSubmit}
+            className="flex-1 px-2 py-1 bg-error/20 text-error text-[11px] rounded-md border border-error/30 hover:bg-error/30 transition-colors cursor-pointer"
+          >
+            Exclude
+          </button>
+          <button
+            onClick={() => setShowExcludeMenu(false)}
+            className="px-2 py-1 text-text-muted text-[11px] rounded-md border border-border hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

@@ -9,6 +9,7 @@ import { usePlayers } from './hooks/usePlayers'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useShortlist } from './hooks/useShortlist'
+import { useExcludedGames } from './hooks/useExcludedGames'
 import { fetchLatestSync } from './lib/api'
 import { applyFilters, getAvailableTags } from './lib/filters'
 import type { GameWithOwnership, SyncLog, AppTab } from './types'
@@ -26,6 +27,9 @@ function App() {
     shortlistedIds, getEntry, toggleShortlist,
     togglePlayer: toggleShortlistPlayer, setReason,
   } = useShortlist()
+  const {
+    excludedIds, getEntry: getExcludedEntry, excludeGame, restoreGame,
+  } = useExcludedGames()
 
   const [activeTab, setActiveTab] = useState<AppTab>('all')
   const [selectedGame, setSelectedGame] = useState<GameWithOwnership | null>(null)
@@ -55,14 +59,15 @@ function App() {
 
   // Apply filters per tab
   const filtersWithPlayers = { ...filters, selectedPlayers: selectedPlayerIds }
-  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab, shortlistedIds)
+  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab, shortlistedIds, excludedIds)
   const availableTags = getAvailableTags(games)
 
   // Tab counts
-  const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds).length
-  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds).length
-  const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds).length
-  const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds).length
+  const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds, excludedIds).length
+  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds, excludedIds).length
+  const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds, excludedIds).length
+  const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds, excludedIds).length
+  const excludedCount = applyFilters(games, filtersWithPlayers, 'excluded', shortlistedIds, excludedIds).length
 
   const loading = playersLoading || gamesLoading
 
@@ -82,7 +87,7 @@ function App() {
         <TabNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          counts={{ all: allCount, trending: trendingCount, new: newCount, shortlisted: shortlistedCount }}
+          counts={{ all: allCount, trending: trendingCount, new: newCount, shortlisted: shortlistedCount, excluded: excludedCount }}
         />
 
         {/* Filters */}
@@ -113,12 +118,16 @@ function App() {
           loading={loading}
           sortBy={filters.sortBy}
           shortlistedIds={shortlistedIds}
+          excludedIds={excludedIds}
           getShortlistEntry={getEntry}
+          getExcludedEntry={getExcludedEntry}
           onToggleSortBy={toggleSortBy}
           onGameClick={setSelectedGame}
           onShortlistToggle={toggleShortlist}
           onShortlistTogglePlayer={toggleShortlistPlayer}
           onShortlistSetReason={setReason}
+          onExclude={excludeGame}
+          onRestore={restoreGame}
         />
       </main>
 
