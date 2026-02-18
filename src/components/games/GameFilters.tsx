@@ -61,7 +61,7 @@ export function GameFilters({
   totalCount,
   filteredCount,
   availableTags,
-  activeTab,
+  activeTab: _activeTab,
   onSearch,
   onToggleSortBy,
   onToggleOwnedByAll,

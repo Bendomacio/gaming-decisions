@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-libraries",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/discover-games",
+      "schedule": "0 12 * * 1"
     }
   ],
   "routes": [
