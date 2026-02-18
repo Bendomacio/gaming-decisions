@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Gaming Decisions - Dark Gaming Theme */
+/* Gaming Decisions - Default Theme (Indigo) */
 @theme {
   --color-bg-primary: #0a0a0f;
   --color-bg-secondary: #12121a;
@@ -49,6 +49,118 @@ html, body, #root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   THEME OVERRIDES
+   ============================================ */
+
+/* Cyberpunk - Neon pink/cyan on deep black */
+[data-theme="cyberpunk"] {
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #111111;
+  --color-bg-card: #1a1a1a;
+  --color-bg-card-hover: #242424;
+  --color-bg-glass: rgba(20, 20, 20, 0.85);
+  --color-bg-input: #141414;
+
+  --color-border: rgba(255, 0, 128, 0.12);
+  --color-border-hover: rgba(255, 0, 128, 0.25);
+  --color-border-accent: rgba(255, 0, 128, 0.5);
+
+  --color-text-primary: #f0e6ff;
+  --color-text-secondary: #b8a0d0;
+  --color-text-muted: #7a6890;
+
+  --color-accent: #ff0080;
+  --color-accent-hover: #ff3da0;
+  --color-accent-dim: rgba(255, 0, 128, 0.15);
+
+  --color-info: #00e5ff;
+
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px rgba(255, 0, 128, 0.2);
+}
+
+/* Midnight - Deep ocean blue */
+[data-theme="midnight"] {
+  --color-bg-primary: #060b18;
+  --color-bg-secondary: #0c1525;
+  --color-bg-card: #121e35;
+  --color-bg-card-hover: #1a2a48;
+  --color-bg-glass: rgba(12, 21, 37, 0.8);
+  --color-bg-input: #0e1829;
+
+  --color-border: rgba(100, 160, 255, 0.1);
+  --color-border-hover: rgba(100, 160, 255, 0.2);
+  --color-border-accent: rgba(56, 132, 255, 0.4);
+
+  --color-text-primary: #dce8f8;
+  --color-text-secondary: #8baac8;
+  --color-text-muted: #5a7a9a;
+
+  --color-accent: #3884ff;
+  --color-accent-hover: #5e9fff;
+  --color-accent-dim: rgba(56, 132, 255, 0.15);
+
+  --shadow-glass: 0 8px 32px rgba(0, 5, 20, 0.4);
+  --shadow-card: 0 4px 16px rgba(0, 5, 20, 0.3);
+  --shadow-glow: 0 0 20px rgba(56, 132, 255, 0.15);
+}
+
+/* Ember - Warm orange/amber on charcoal */
+[data-theme="ember"] {
+  --color-bg-primary: #0f0c0a;
+  --color-bg-secondary: #1a1510;
+  --color-bg-card: #261e16;
+  --color-bg-card-hover: #332820;
+  --color-bg-glass: rgba(26, 21, 16, 0.8);
+  --color-bg-input: #1e1812;
+
+  --color-border: rgba(255, 160, 60, 0.1);
+  --color-border-hover: rgba(255, 160, 60, 0.2);
+  --color-border-accent: rgba(245, 130, 30, 0.4);
+
+  --color-text-primary: #f5ede4;
+  --color-text-secondary: #c0a888;
+  --color-text-muted: #8a7560;
+
+  --color-accent: #f5821e;
+  --color-accent-hover: #ff9b40;
+  --color-accent-dim: rgba(245, 130, 30, 0.15);
+
+  --color-warning: #fbbf24;
+
+  --shadow-glass: 0 8px 32px rgba(10, 5, 0, 0.4);
+  --shadow-card: 0 4px 16px rgba(10, 5, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(245, 130, 30, 0.15);
+}
+
+/* Emerald - Green/teal on dark forest */
+[data-theme="emerald"] {
+  --color-bg-primary: #060f0a;
+  --color-bg-secondary: #0c1a12;
+  --color-bg-card: #14261c;
+  --color-bg-card-hover: #1e3528;
+  --color-bg-glass: rgba(12, 26, 18, 0.8);
+  --color-bg-input: #102016;
+
+  --color-border: rgba(52, 211, 153, 0.1);
+  --color-border-hover: rgba(52, 211, 153, 0.2);
+  --color-border-accent: rgba(16, 185, 129, 0.4);
+
+  --color-text-primary: #e0f5ec;
+  --color-text-secondary: #8bc4a8;
+  --color-text-muted: #5a9a78;
+
+  --color-accent: #10b981;
+  --color-accent-hover: #34d399;
+  --color-accent-dim: rgba(16, 185, 129, 0.15);
+
+  --shadow-glass: 0 8px 32px rgba(0, 10, 5, 0.4);
+  --shadow-card: 0 4px 16px rgba(0, 10, 5, 0.3);
+  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.15);
 }
 
 /* Scrollbar styling */

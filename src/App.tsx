@@ -10,6 +10,7 @@ import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
 import { useShortlist } from './hooks/useShortlist'
 import { useExcludedGames } from './hooks/useExcludedGames'
+import { useTheme } from './hooks/useTheme'
 import { fetchLatestSync } from './lib/api'
 import { applyFilters, getAvailableTags } from './lib/filters'
 import type { GameWithOwnership, SyncLog, AppTab } from './types'
@@ -30,6 +31,7 @@ function App() {
   const {
     excludedIds, getEntry: getExcludedEntry, excludeGame, restoreGame,
   } = useExcludedGames()
+  const { theme, setTheme } = useTheme()
 
   const [activeTab, setActiveTab] = useState<AppTab>('all')
   const [selectedGame, setSelectedGame] = useState<GameWithOwnership | null>(null)
@@ -73,7 +75,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-bg-primary">
-      <Header lastSync={lastSync} onRefresh={handleRefresh} syncing={syncing} />
+      <Header lastSync={lastSync} onRefresh={handleRefresh} syncing={syncing} theme={theme} onThemeChange={setTheme} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-4">
         {/* Player selector */}
