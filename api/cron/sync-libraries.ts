@@ -84,7 +84,7 @@ async function getProtonDBRating(appId: number): Promise<string | null> {
   }
 }
 
-async function getSteamReviews(appId: number): Promise<{ score: number; desc: string } | null> {
+async function getSteamReviews(appId: number): Promise<{ score: number; desc: string; count: number } | null> {
   try {
     const res = await fetch(`https://store.steampowered.com/appreviews/${appId}?json=1&language=all&purchase_type=all`)
     if (!res.ok) return null
@@ -93,7 +93,7 @@ async function getSteamReviews(appId: number): Promise<{ score: number; desc: st
     if (!summary || summary.total_reviews === 0) return null
     const score = Math.round((summary.total_positive / summary.total_reviews) * 100)
     const desc = getReviewDescription(score)
-    return { score, desc }
+    return { score, desc, count: summary.total_reviews }
   } catch {
     return null
   }
@@ -198,6 +198,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         protondb_rating: protonRating,
         steam_review_score: reviews?.score ?? null,
         steam_review_desc: reviews?.desc ?? null,
+        steam_review_count: reviews?.count ?? null,
         steam_price_cents: priceCents,
         is_free: storeData.is_free,
         is_on_sale: isOnSale,

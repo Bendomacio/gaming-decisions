@@ -1,9 +1,18 @@
 import type { ProtonDBRating } from '../types'
 
+const USD_TO_GBP = 0.79
+
 export function formatPrice(cents: number | null): string {
   if (cents === null) return 'N/A'
   if (cents === 0) return 'Free'
   return `$${(cents / 100).toFixed(2)}`
+}
+
+export function formatPriceGBP(cents: number | null): string {
+  if (cents === null) return '--'
+  if (cents === 0) return 'Free'
+  const gbp = (cents / 100) * USD_TO_GBP
+  return `£${gbp.toFixed(2)}`
 }
 
 export function formatPlaytime(hours: number): string {

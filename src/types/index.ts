@@ -24,6 +24,7 @@ export interface Game {
   servers_deprecated: boolean
   steam_review_score: number | null
   steam_review_desc: string | null
+  steam_review_count: number | null
   opencritic_score: number | null
   opencritic_tier: string | null
   steam_price_cents: number | null

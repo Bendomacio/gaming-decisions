@@ -17,19 +17,40 @@ export function OwnershipBadges({ players, owners, selectedIds, compact = false 
         .filter(p => selectedIds.includes(p.id))
         .map(player => {
           const owns = ownerPlayerIds.has(player.id)
+          const size = compact ? 'w-6 h-6' : 'w-7 h-7'
           return (
             <div
               key={player.id}
               title={`${player.name}: ${owns ? 'Owns it' : 'Doesn\'t own it'}`}
               className={cn(
-                'rounded-full flex items-center justify-center text-[10px] font-bold transition-all',
-                compact ? 'w-5 h-5' : 'w-6 h-6',
+                'relative rounded-full flex items-center justify-center overflow-hidden',
+                size,
                 owns
-                  ? 'bg-success/20 text-success border border-success/30'
-                  : 'bg-error/10 text-error/60 border border-error/20'
+                  ? 'ring-2 ring-success/60'
+                  : 'ring-2 ring-error/40 opacity-50'
               )}
             >
-              {player.name[0]}
+              {player.avatar_url ? (
+                <img
+                  src={player.avatar_url}
+                  alt={player.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className={cn(
+                  'w-full h-full flex items-center justify-center text-[10px] font-bold',
+                  owns ? 'bg-success/20 text-success' : 'bg-error/10 text-error/60'
+                )}>
+                  {player.name[0]}
+                </div>
+              )}
+              {/* Letter overlay */}
+              <span className={cn(
+                'absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]',
+                !owns && 'text-white/60'
+              )}>
+                {player.name[0]}
+              </span>
             </div>
           )
         })}

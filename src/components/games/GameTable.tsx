@@ -22,15 +22,16 @@ interface ColumnHeader {
 }
 
 const columns: ColumnHeader[] = [
-  { label: '', width: 'w-[120px]' },             // thumbnail
+  { label: '', width: 'w-[120px]' },                          // thumbnail
   { label: 'Game', sortKey: 'name', width: 'flex-1', align: 'left' },
-  { label: 'Owners', width: 'w-[90px]', align: 'center' },
-  { label: 'Rating', sortKey: 'review_score', width: 'w-[60px]', align: 'center' },
-  { label: 'Linux', width: 'w-[80px]', align: 'center' },
-  { label: 'Played', sortKey: 'playtime', width: 'w-[55px]', align: 'center' },
-  { label: 'Price', sortKey: 'price_asc', width: 'w-[80px]', align: 'center' },
-  { label: 'Score', sortKey: 'recommendation', width: 'w-[40px]', align: 'center' },
-  { label: '', width: 'w-6' },                    // steam link
+  { label: 'Owners', width: 'w-[80px]', align: 'center' },
+  { label: 'Modes', width: 'w-[70px]', align: 'center' },
+  { label: 'Steam Reviews', sortKey: 'review_score', width: 'w-[130px]', align: 'left' },
+  { label: 'OpenCritic', width: 'w-[60px]', align: 'center' },
+  { label: 'Linux', width: 'w-[70px]', align: 'center' },
+  { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center' },
+  { label: 'Price', sortKey: 'price_asc', width: 'w-[90px]', align: 'center' },
+  { label: '', width: 'w-6' },                                // steam link
 ]
 
 export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, onSortBy, onGameClick }: GameTableProps) {
@@ -55,7 +56,7 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
   return (
     <div className="space-y-1">
       {/* Column headers */}
-      <div className="flex items-center gap-4 px-3 py-1.5">
+      <div className="flex items-center gap-3 px-3 py-1.5">
         {columns.map((col, i) => (
           <div
             key={i}
