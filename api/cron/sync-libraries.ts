@@ -84,6 +84,18 @@ async function getProtonDBRating(appId: number): Promise<string | null> {
   }
 }
 
+async function getSteamSpyTags(appId: number): Promise<string[] | null> {
+  try {
+    const res = await fetch(`https://steamspy.com/api.php?request=appdetails&appid=${appId}`)
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data.tags || Object.keys(data.tags).length === 0) return null
+    return Object.keys(data.tags).slice(0, 10)
+  } catch {
+    return null
+  }
+}
+
 async function getSteamReviews(appId: number): Promise<{ score: number; desc: string; count: number } | null> {
   try {
     const res = await fetch(`https://store.steampowered.com/appreviews/${appId}?json=1&language=all&purchase_type=all`)
@@ -183,6 +195,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Get review score
       const reviews = await getSteamReviews(appId)
 
+      // Get user-defined tags from SteamSpy (fallback to Steam genres)
+      const steamSpyTags = await getSteamSpyTags(appId)
+
       // Calculate price
       const priceCents = storeData.is_free ? 0 : (storeData.price_overview?.final ?? null)
       const isOnSale = (storeData.price_overview?.discount_percent ?? 0) > 0
@@ -205,7 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         sale_percent: salePercent,
         release_date: storeData.release_date?.date ? parseReleaseDate(storeData.release_date.date) : null,
         is_coming_soon: storeData.release_date?.coming_soon ?? false,
-        steam_tags: genres,
+        steam_tags: steamSpyTags ?? genres,
         categories: categories,
         last_updated_at: new Date().toISOString(),
       }, { onConflict: 'steam_app_id' })

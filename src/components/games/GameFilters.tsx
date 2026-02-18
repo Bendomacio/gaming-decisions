@@ -239,15 +239,41 @@ export function GameFilters({
 
         <div className="w-px h-4 bg-border" />
 
-        {availableTags.slice(0, 10).map(tag => {
+        {/* Show excluded tags not in available list first */}
+        {filters.excludeGenreTags
+          .filter(tag => !availableTags.includes(tag))
+          .map(tag => (
+            <button
+              key={tag}
+              onClick={() => onToggleExcludeTag(tag)}
+              className="px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer flex items-center gap-1 bg-error/15 text-error border-error/30 line-through"
+            >
+              <Ban size={9} />
+              {tag}
+            </button>
+          ))}
+        {availableTags.slice(0, 15).map(tag => {
           const isIncluded = filters.genreTags.includes(tag)
           const isExcluded = filters.excludeGenreTags.includes(tag)
+          // Click cycles: neutral → include → exclude → neutral
+          const handleClick = () => {
+            if (isIncluded) {
+              // include → exclude: remove from include, add to exclude
+              onToggleTag(tag)
+              onToggleExcludeTag(tag)
+            } else if (isExcluded) {
+              // exclude → neutral: remove from exclude
+              onToggleExcludeTag(tag)
+            } else {
+              // neutral → include
+              onToggleTag(tag)
+            }
+          }
           return (
             <button
               key={tag}
-              onClick={() => onToggleTag(tag)}
-              onContextMenu={e => { e.preventDefault(); onToggleExcludeTag(tag) }}
-              title="Click to include, right-click to exclude"
+              onClick={handleClick}
+              title="Click to cycle: include → exclude → off"
               className={cn(
                 'px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer flex items-center gap-1',
                 isIncluded

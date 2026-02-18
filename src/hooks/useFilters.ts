@@ -7,7 +7,7 @@ const defaultFilters: FilterState = {
   freeOnly: false,
   onSaleOnly: false,
   genreTags: [],
-  excludeGenreTags: [],
+  excludeGenreTags: ['Massively Multiplayer'],
   sortBy: ['recommendation'],
   searchQuery: '',
   gameModes: {
