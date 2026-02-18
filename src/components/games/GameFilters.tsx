@@ -14,6 +14,7 @@ interface GameFiltersProps {
   onToggleOwnedByAll: () => void
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
+  onToggleLinuxOnly: () => void
   onToggleTag: (tag: string) => void
   onToggleExcludeTag: (tag: string) => void
   onToggleGameMode: (mode: keyof GameModeFilters) => void
@@ -66,6 +67,7 @@ export function GameFilters({
   onToggleOwnedByAll,
   onToggleFreeOnly,
   onToggleOnSaleOnly,
+  onToggleLinuxOnly,
   onToggleTag,
   onToggleExcludeTag,
   onToggleGameMode,
@@ -77,6 +79,7 @@ export function GameFilters({
     filters.ownedByAll,
     filters.freeOnly,
     filters.onSaleOnly,
+    !filters.linuxOnly,
     filters.genreTags.length > 0,
     filters.excludeGenreTags.length > 0,
     filters.protonFilter !== 'all',
@@ -107,8 +110,7 @@ export function GameFilters({
           )}
         </div>
 
-        {activeTab === 'all' && (
-          <div className="flex items-center gap-1 bg-bg-input border border-border rounded-lg p-1">
+        <div className="flex items-center gap-1 bg-bg-input border border-border rounded-lg p-1">
             {sortOptions.map(opt => {
               const idx = filters.sortBy.indexOf(opt.value)
               const isActive = idx !== -1
@@ -133,7 +135,6 @@ export function GameFilters({
               )
             })}
           </div>
-        )}
       </div>
 
       {/* Row 2: Game Modes + Proton + Release Date */}
@@ -160,6 +161,17 @@ export function GameFilters({
 
         <div className="flex items-center gap-2">
           <Monitor size={12} className="text-text-muted" />
+          <button
+            onClick={onToggleLinuxOnly}
+            className={cn(
+              'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+              filters.linuxOnly
+                ? 'bg-accent-dim text-accent-hover border-border-accent'
+                : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+            )}
+          >
+            Linux
+          </button>
           {protonOptions.map(opt => (
             <button
               key={opt.value}

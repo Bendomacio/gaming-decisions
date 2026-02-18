@@ -95,6 +95,7 @@ export interface FilterState {
   freeOnly: boolean
   onSaleOnly: boolean
   shortlistedOnly: boolean
+  linuxOnly: boolean
   genreTags: string[]
   excludeGenreTags: string[]
   sortBy: SortOption[]

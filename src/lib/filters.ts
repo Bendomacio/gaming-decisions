@@ -63,8 +63,10 @@ export function applyFilters(
   excludedIds?: Set<string>
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
-    if (!game.supports_linux) return false
     if (game.servers_deprecated) return false
+
+    // Linux filter (togglable, default on)
+    if (filters.linuxOnly && !game.supports_linux) return false
 
     // Excluded games: hide from all tabs except 'excluded', only show on 'excluded'
     if (tab === 'excluded') {
@@ -123,11 +125,14 @@ export function applyFilters(
     return true
   })
 
-  // Sort - supports multiple sort keys in priority order
+  // Sort - user's sort keys apply on ALL tabs, with tab-specific default appended
   const selectedCount = filters.selectedPlayers.length
-  const sortKeys = tab === 'trending' ? ['trending' as const] :
-                   tab === 'new' ? ['release_date' as const] :
-                   filters.sortBy
+  const userSort = filters.sortBy
+  const tabDefault: SortOption | null = tab === 'trending' ? 'trending' :
+                                        tab === 'new' ? 'release_date' : null
+  const sortKeys = tabDefault && !userSort.includes(tabDefault)
+    ? [...userSort, tabDefault]
+    : userSort
 
   function compareBySortKey(a: GameWithOwnership, b: GameWithOwnership, sortBy: SortOption): number {
     switch (sortBy) {
