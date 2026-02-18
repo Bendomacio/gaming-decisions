@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-libraries",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-prices",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-trending",
+      "schedule": "0 */12 * * *"
+    }
+  ],
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
