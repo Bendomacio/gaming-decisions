@@ -8,8 +8,37 @@ const supabase = createClient(
 const ITAD_API_KEY = process.env.ITAD_API_KEY
 const CRON_SECRET = process.env.CRON_SECRET
 
-async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+// Process this many games per cron run (fits within 10s Vercel timeout)
+const BATCH_SIZE = 20
+
+async function lookupItadId(steamAppId: number): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://api.isthereanydeal.com/games/lookup/v1?key=${ITAD_API_KEY}&appid=${steamAppId}`
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.found ? data.game.id : null
+  } catch {
+    return null
+  }
+}
+
+async function getOverview(itadIds: string[]): Promise<{ prices: Array<{ id: string; current: { price: { amountInt: number }; shop?: { name: string }; url?: string } | null }> } | null> {
+  try {
+    const res = await fetch(
+      `https://api.isthereanydeal.com/games/overview/v2?key=${ITAD_API_KEY}&country=GB`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itadIds),
+      }
+    )
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -30,13 +59,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let gamesUpdated = 0
 
   try {
-    // Get games that are linux compatible and not free
+    // Get games ordered by least recently updated prices (rotate through all games)
     const { data: games } = await supabase
       .from('games')
       .select('id, steam_app_id, name')
       .eq('supports_linux', true)
       .eq('servers_deprecated', false)
       .eq('is_free', false)
+      .order('last_updated_at', { ascending: true, nullsFirst: true })
+      .limit(BATCH_SIZE)
 
     if (!games || games.length === 0) {
       await supabase.from('sync_log').update({
@@ -47,73 +78,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, gamesUpdated: 0 })
     }
 
-    // Process in batches of 5 (ITAD rate limits)
-    for (let i = 0; i < games.length; i += 5) {
-      const batch = games.slice(i, i + 5)
+    // Step 1: Look up ITAD IDs for all games in parallel
+    const lookups = await Promise.all(
+      games.map(async g => ({ game: g, itadId: await lookupItadId(g.steam_app_id) }))
+    )
 
-      for (const game of batch) {
-        try {
-          // ITAD uses Steam app IDs with a "app/" prefix
-          const itadRes = await fetch(
-            `https://api.isthereanydeal.com/games/prices/v2?key=${ITAD_API_KEY}&country=GB&capacity=1`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify([`app/${game.steam_app_id}`]),
-            }
-          )
+    const withIds = lookups.filter(l => l.itadId)
 
-          if (itadRes.ok) {
-            const itadData = await itadRes.json()
-            const gameKey = `app/${game.steam_app_id}`
-            const prices = itadData[gameKey]
+    if (withIds.length > 0) {
+      // Step 2: Get overview with prices in a single batch call
+      const itadIds = withIds.map(l => l.itadId!)
+      const overview = await getOverview(itadIds)
 
-            if (prices && prices.length > 0) {
-              // Find the cheapest current deal
-              const cheapest = prices.reduce((min: { price: { amount: number } }, deal: { price: { amount: number } }) =>
-                deal.price.amount < min.price.amount ? deal : min
-              , prices[0])
+      if (overview?.prices) {
+        for (const priceData of overview.prices) {
+          const lookup = withIds.find(l => l.itadId === priceData.id)
+          if (!lookup) continue
 
-              await supabase.from('games').update({
-                best_price_cents: Math.round(cheapest.price.amount * 100),
-                best_price_store: cheapest.shop?.name ?? null,
-                best_price_url: cheapest.url ?? null,
-                last_updated_at: new Date().toISOString(),
-              }).eq('id', game.id)
-
-              gamesUpdated++
-            }
-          }
-        } catch {
-          // Skip individual failures
-        }
-      }
-
-      // Rate limit between batches
-      if (i + 5 < games.length) {
-        await sleep(1000)
-      }
-    }
-
-    // Also update Steam prices (sales change)
-    for (const game of games) {
-      try {
-        const storeRes = await fetch(`https://store.steampowered.com/api/appdetails?appids=${game.steam_app_id}&filters=price_overview`)
-        if (storeRes.ok) {
-          const storeData = await storeRes.json()
-          const appData = storeData[game.steam_app_id]
-          if (appData?.success && appData.data?.price_overview) {
-            const price = appData.data.price_overview
+          const current = priceData.current
+          if (current) {
             await supabase.from('games').update({
-              steam_price_cents: price.final,
-              is_on_sale: price.discount_percent > 0,
-              sale_percent: price.discount_percent > 0 ? price.discount_percent : null,
-            }).eq('id', game.id)
+              best_price_cents: current.price.amountInt,
+              best_price_store: current.shop?.name ?? null,
+              best_price_url: current.url ?? null,
+              last_updated_at: new Date().toISOString(),
+            }).eq('id', lookup.game.id)
+            gamesUpdated++
           }
         }
-        await sleep(200)
-      } catch {
-        // Skip
       }
     }
 
@@ -123,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       finished_at: new Date().toISOString(),
     }).eq('id', syncLog?.id)
 
-    return res.status(200).json({ success: true, gamesUpdated })
+    return res.status(200).json({ success: true, gamesUpdated, batch: games.length })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     await supabase.from('sync_log').update({
