@@ -85,6 +85,11 @@ export function applyFilters(
     // Proton filter
     if (!matchesProtonFilter(game.protondb_rating, filters.protonFilter)) return false
 
+    // Minimum review count filter
+    if (filters.minReviewCount > 0 && !game.is_coming_soon) {
+      if ((game.steam_review_count ?? 0) < filters.minReviewCount) return false
+    }
+
     // Release date filter (applies on all tabs)
     if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
 

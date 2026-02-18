@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Zap, Database, RefreshCw, Loader2, CheckCircle2, SkipForward, TrendingUp, Users } from 'lucide-react'
+import { Zap, Database, RefreshCw, Loader2, CheckCircle2, SkipForward, TrendingUp, Users, Settings, Save } from 'lucide-react'
+import { loadConfig, saveConfig, DEFAULT_CONFIG } from '../lib/config'
+import type { AppConfig } from '../lib/config'
+import type { ProtonFilter, ReleaseDateFilter, SortOption } from '../types'
 
 interface GameResult {
   appId: number
@@ -29,7 +32,10 @@ export function Admin() {
   const processingRef = useRef(false)
   const pendingRef = useRef<number[]>([])
 
-  // Keep ref in sync with state
+  // Config state
+  const [config, setConfig] = useState<AppConfig>(loadConfig)
+  const [configSaved, setConfigSaved] = useState(false)
+
   useEffect(() => {
     pendingRef.current = discover.pendingAppIds
   }, [discover.pendingAppIds])
@@ -40,7 +46,6 @@ export function Admin() {
     }
   }, [])
 
-  // Auto-process next batch when there are pending IDs
   useEffect(() => {
     if (discover.phase === 'processing' && discover.pendingAppIds.length > 0 && !processingRef.current) {
       processingRef.current = true
@@ -147,9 +152,26 @@ export function Admin() {
     setRunning(false)
   }
 
+  const handleSaveConfig = () => {
+    saveConfig(config)
+    setConfigSaved(true)
+    setTimeout(() => setConfigSaved(false), 2000)
+  }
+
+  const handleResetConfig = () => {
+    setConfig(DEFAULT_CONFIG)
+    saveConfig(DEFAULT_CONFIG)
+    setConfigSaved(true)
+    setTimeout(() => setConfigSaved(false), 2000)
+  }
+
   const totalToProcess = discover.totalDiscovered - discover.alreadyInDB
   const processed = discover.results.length
   const progressPct = totalToProcess > 0 ? Math.round((processed / totalToProcess) * 100) : 0
+
+  const toggleBtn = 'px-3 py-1.5 rounded-lg text-xs border transition-all cursor-pointer'
+  const toggleOn = 'bg-accent/15 text-accent border-accent/30'
+  const toggleOff = 'bg-bg-card text-text-muted border-border hover:border-border-hover'
 
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary p-8">
@@ -159,6 +181,7 @@ export function Admin() {
           <h1 className="text-2xl font-bold">Admin Panel</h1>
         </div>
 
+        {/* Sync buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
             onClick={runDiscovery}
@@ -251,7 +274,6 @@ export function Admin() {
         {/* Discovery progress */}
         {discover.phase !== 'idle' && (
           <div className="space-y-3">
-            {/* Status bar */}
             <div className="flex items-center gap-3 p-4 bg-bg-card border border-border rounded-xl">
               {discover.phase === 'done' ? (
                 <CheckCircle2 size={20} className="text-success shrink-0" />
@@ -282,7 +304,6 @@ export function Admin() {
               </div>
             </div>
 
-            {/* Results log */}
             {discover.results.length > 0 && (
               <div
                 ref={logRef}
@@ -307,6 +328,233 @@ export function Admin() {
             )}
           </div>
         )}
+
+        {/* Default Settings */}
+        <div className="bg-bg-secondary border border-border rounded-xl p-5 space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Settings size={18} className="text-accent" />
+              <h2 className="text-lg font-semibold">Default Settings</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleResetConfig}
+                className="px-3 py-1.5 rounded-lg text-xs text-text-muted border border-border hover:border-border-hover transition-all cursor-pointer"
+              >
+                Reset to Defaults
+              </button>
+              <button
+                onClick={handleSaveConfig}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  configSaved
+                    ? 'bg-success/15 text-success border border-success/30'
+                    : 'bg-accent text-white hover:bg-accent-hover'
+                }`}
+              >
+                {configSaved ? <CheckCircle2 size={12} /> : <Save size={12} />}
+                {configSaved ? 'Saved!' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-xs text-text-muted -mt-3">
+            Changes apply on next page load of the main app.
+          </p>
+
+          {/* Min Review Count */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Minimum Steam Reviews</label>
+            <p className="text-xs text-text-muted">Hide games with fewer reviews than this (0 = show all)</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                min={0}
+                max={10000}
+                value={config.minReviewCount}
+                onChange={e => setConfig(prev => ({ ...prev, minReviewCount: Math.max(0, parseInt(e.target.value) || 0) }))}
+                className="w-28 bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-border-accent transition-colors"
+              />
+              <div className="flex gap-1.5">
+                {[0, 50, 150, 500, 1000].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setConfig(prev => ({ ...prev, minReviewCount: n }))}
+                    className={`${toggleBtn} ${config.minReviewCount === n ? toggleOn : toggleOff}`}
+                  >
+                    {n === 0 ? 'Off' : n}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Default Sort */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Default Sort</label>
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                ['recommendation', 'Recommended'],
+                ['review_score', 'Rating'],
+                ['price_asc', 'Price: Low'],
+                ['current_players', 'Playing Now'],
+                ['name', 'Name'],
+                ['recently_added', 'Recently Added'],
+              ] as [SortOption, string][]).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setConfig(prev => ({ ...prev, defaultSortBy: value }))}
+                  className={`${toggleBtn} ${config.defaultSortBy === value ? toggleOn : toggleOff}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Default Game Modes */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Default Game Modes</label>
+            <p className="text-xs text-text-muted">Which modes are enabled by default</p>
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                ['multiplayer', 'Multiplayer'],
+                ['coop', 'Co-op'],
+                ['singlePlayer', 'Single Player'],
+                ['localMultiplayer', 'Local MP'],
+              ] as [keyof typeof config.defaultGameModes, string][]).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setConfig(prev => ({
+                    ...prev,
+                    defaultGameModes: { ...prev.defaultGameModes, [key]: !prev.defaultGameModes[key] },
+                  }))}
+                  className={`${toggleBtn} ${config.defaultGameModes[key] ? toggleOn : toggleOff}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Linux Filter Default */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Linux Filter</label>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setConfig(prev => ({ ...prev, defaultLinuxOnly: false }))}
+                className={`${toggleBtn} ${!config.defaultLinuxOnly ? toggleOn : toggleOff}`}
+              >
+                Off (show all)
+              </button>
+              <button
+                onClick={() => setConfig(prev => ({ ...prev, defaultLinuxOnly: true }))}
+                className={`${toggleBtn} ${config.defaultLinuxOnly ? toggleOn : toggleOff}`}
+              >
+                On (Linux only)
+              </button>
+            </div>
+          </div>
+
+          {/* Proton Filter Default */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Default Proton Filter</label>
+            <div className="flex gap-1.5">
+              {([
+                ['all', 'All'],
+                ['native', 'Native'],
+                ['platinum', 'Platinum+'],
+                ['gold', 'Gold+'],
+              ] as [ProtonFilter, string][]).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setConfig(prev => ({ ...prev, defaultProtonFilter: value }))}
+                  className={`${toggleBtn} ${config.defaultProtonFilter === value ? toggleOn : toggleOff}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Release Date Filter Default */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Default Release Date</label>
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                ['all', 'Any'],
+                ['year', '1yr'],
+                ['2years', '2yr'],
+                ['3years', '3yr'],
+                ['5years', '5yr'],
+                ['10years', '10yr'],
+              ] as [ReleaseDateFilter, string][]).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => setConfig(prev => ({ ...prev, defaultReleaseDateFilter: value }))}
+                  className={`${toggleBtn} ${config.defaultReleaseDateFilter === value ? toggleOn : toggleOff}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Default Excluded Tags */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-text-secondary">Default Excluded Tags</label>
+            <p className="text-xs text-text-muted">Tags excluded by default (click to remove)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {config.defaultExcludeTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => setConfig(prev => ({
+                    ...prev,
+                    defaultExcludeTags: prev.defaultExcludeTags.filter(t => t !== tag),
+                  }))}
+                  className="px-3 py-1.5 rounded-lg text-xs border bg-error/15 text-error border-error/30 cursor-pointer line-through"
+                >
+                  {tag}
+                </button>
+              ))}
+              {config.defaultExcludeTags.length === 0 && (
+                <span className="text-xs text-text-muted italic">None</span>
+              )}
+              {!config.defaultExcludeTags.includes('Massively Multiplayer') && (
+                <button
+                  onClick={() => setConfig(prev => ({
+                    ...prev,
+                    defaultExcludeTags: [...prev.defaultExcludeTags, 'Massively Multiplayer'],
+                  }))}
+                  className={`${toggleBtn} ${toggleOff}`}
+                >
+                  + MMO
+                </button>
+              )}
+              {!config.defaultExcludeTags.includes('Sexual Content') && (
+                <button
+                  onClick={() => setConfig(prev => ({
+                    ...prev,
+                    defaultExcludeTags: [...prev.defaultExcludeTags, 'Sexual Content'],
+                  }))}
+                  className={`${toggleBtn} ${toggleOff}`}
+                >
+                  + Sexual Content
+                </button>
+              )}
+              {!config.defaultExcludeTags.includes('Early Access') && (
+                <button
+                  onClick={() => setConfig(prev => ({
+                    ...prev,
+                    defaultExcludeTags: [...prev.defaultExcludeTags, 'Early Access'],
+                  }))}
+                  className={`${toggleBtn} ${toggleOff}`}
+                >
+                  + Early Access
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
 
         <div className="text-xs text-text-muted">
           Game discovery runs automatically every Monday. Use buttons to trigger manually.

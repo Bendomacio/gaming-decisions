@@ -1,30 +1,30 @@
 import { useState, useCallback } from 'react'
+import { loadConfig } from '../lib/config'
 import type { FilterState, SortOption, ProtonFilter, ReleaseDateFilter } from '../types'
 
-const defaultFilters: FilterState = {
-  selectedPlayers: [],
-  ownedByAll: false,
-  ownedByNone: false,
-  freeOnly: false,
-  onSaleOnly: false,
-  shortlistedOnly: false,
-  linuxOnly: false,
-  genreTags: [],
-  excludeGenreTags: ['Massively Multiplayer'],
-  sortBy: ['recommendation'],
-  searchQuery: '',
-  gameModes: {
-    multiplayer: true,
-    coop: true,
-    singlePlayer: false,
-    localMultiplayer: false,
-  },
-  protonFilter: 'all',
-  releaseDateFilter: 'all',
+function buildDefaults(): FilterState {
+  const config = loadConfig()
+  return {
+    selectedPlayers: [],
+    ownedByAll: false,
+    ownedByNone: false,
+    freeOnly: false,
+    onSaleOnly: false,
+    shortlistedOnly: false,
+    linuxOnly: config.defaultLinuxOnly,
+    genreTags: [],
+    excludeGenreTags: [...config.defaultExcludeTags],
+    sortBy: [config.defaultSortBy],
+    searchQuery: '',
+    gameModes: { ...config.defaultGameModes },
+    protonFilter: config.defaultProtonFilter,
+    releaseDateFilter: config.defaultReleaseDateFilter,
+    minReviewCount: config.minReviewCount,
+  }
 }
 
 export function useFilters() {
-  const [filters, setFilters] = useState<FilterState>(defaultFilters)
+  const [filters, setFilters] = useState<FilterState>(buildDefaults)
 
   const setSearch = useCallback((query: string) => {
     setFilters(prev => ({ ...prev, searchQuery: query }))
@@ -34,15 +34,12 @@ export function useFilters() {
     setFilters(prev => {
       const current = prev.sortBy
       if (current[0] === sort) {
-        // Already primary - remove it, promote next or fall back
         const next = current.slice(1)
         return { ...prev, sortBy: next.length > 0 ? next : ['recommendation'] }
       }
       if (current.includes(sort)) {
-        // Already in chain but not primary - promote to front
         return { ...prev, sortBy: [sort, ...current.filter(s => s !== sort)] }
       }
-      // Not in chain - add to front as primary
       return { ...prev, sortBy: [sort, ...current] }
     })
   }, [])
@@ -77,7 +74,6 @@ export function useFilters() {
       genreTags: prev.genreTags.includes(tag)
         ? prev.genreTags.filter(t => t !== tag)
         : [...prev.genreTags, tag],
-      // Remove from exclude if adding to include
       excludeGenreTags: prev.excludeGenreTags.filter(t => t !== tag),
     }))
   }, [])
@@ -88,7 +84,6 @@ export function useFilters() {
       excludeGenreTags: prev.excludeGenreTags.includes(tag)
         ? prev.excludeGenreTags.filter(t => t !== tag)
         : [...prev.excludeGenreTags, tag],
-      // Remove from include if adding to exclude
       genreTags: prev.genreTags.filter(t => t !== tag),
     }))
   }, [])
@@ -109,7 +104,7 @@ export function useFilters() {
   }, [])
 
   const resetFilters = useCallback(() => {
-    setFilters(prev => ({ ...defaultFilters, selectedPlayers: prev.selectedPlayers }))
+    setFilters(prev => ({ ...buildDefaults(), selectedPlayers: prev.selectedPlayers }))
   }, [])
 
   const updateSelectedPlayers = useCallback((ids: string[]) => {
