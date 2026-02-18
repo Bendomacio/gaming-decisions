@@ -39,6 +39,8 @@ export interface Game {
   steam_tags: string[]
   categories: string[]
   trending_score: number | null
+  current_players: number | null
+  player_count_updated_at: string | null
   last_updated_at: string | null
   created_at: string
 }
@@ -115,6 +117,7 @@ export type SortOption =
   | 'recently_added'
   | 'trending'
   | 'release_date'
+  | 'current_players'
 
 export interface SteamOwnedGame {
   appid: number

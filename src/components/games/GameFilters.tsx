@@ -31,6 +31,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'playtime', label: 'Playtime' },
   { value: 'name', label: 'Name' },
   { value: 'recently_added', label: 'Recently Added' },
+  { value: 'current_players', label: 'Playing Now' },
 ]
 
 const gameModeOptions: { key: keyof GameModeFilters; label: string }[] = [

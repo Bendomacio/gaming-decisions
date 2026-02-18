@@ -46,6 +46,12 @@ function formatReviewCount(count: number): string {
   return String(count)
 }
 
+function formatPlayerCount(count: number): string {
+  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+  if (count >= 1000) return `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k`
+  return String(count)
+}
+
 export function GameRow({ game, players, selectedPlayerIds, isShortlisted, shortlistEntry, isExcluded, excludedEntry, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason, onExclude, onRestore, onClick }: GameRowProps) {
   const totalPlaytime = game.owners.reduce((sum, o) => sum + o.playtime_hours, 0)
   const modes = getMultiplayerModes(game.categories)
@@ -161,6 +167,21 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
             game.max_players >= 999 ? 'text-text-muted' : 'text-text-secondary'
           )}>
             {game.max_players >= 999 ? 'MMO' : game.max_players}
+          </span>
+        ) : (
+          <span className="text-[10px] text-text-muted">--</span>
+        )}
+      </div>
+
+      {/* Current Players */}
+      <div className="flex-shrink-0 w-[55px] text-center">
+        {game.current_players != null && game.current_players > 0 ? (
+          <span className={cn(
+            'text-[10px] font-medium',
+            game.current_players >= 10000 ? 'text-success' :
+            game.current_players >= 1000 ? 'text-text-secondary' : 'text-text-muted'
+          )}>
+            {formatPlayerCount(game.current_players)}
           </span>
         ) : (
           <span className="text-[10px] text-text-muted">--</span>

@@ -166,6 +166,8 @@ export function applyFilters(
         const dateB = b.release_date ? new Date(b.release_date).getTime() : 0
         return dateB - dateA
       }
+      case 'current_players':
+        return (b.current_players ?? 0) - (a.current_players ?? 0)
       default:
         return 0
     }

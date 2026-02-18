@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Zap, Database, RefreshCw, Loader2, CheckCircle2, SkipForward, TrendingUp } from 'lucide-react'
+import { Zap, Database, RefreshCw, Loader2, CheckCircle2, SkipForward, TrendingUp, Users } from 'lucide-react'
 
 interface GameResult {
   appId: number
@@ -220,6 +220,22 @@ export function Admin() {
               <div className="font-medium">Sync Trending</div>
               <div className="text-xs text-text-muted mt-0.5">
                 Update trending scores from SteamSpy
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => triggerSync('sync-player-counts', 'Player Count Sync')}
+            disabled={running}
+            className="flex items-center gap-3 p-4 bg-bg-card border border-border rounded-xl hover:border-border-accent transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <div className="p-2.5 bg-success/15 rounded-lg">
+              <Users size={20} className="text-success" />
+            </div>
+            <div>
+              <div className="font-medium">Sync Player Counts</div>
+              <div className="text-xs text-text-muted mt-0.5">
+                Current players from Steam (50 games/batch)
               </div>
             </div>
           </button>
