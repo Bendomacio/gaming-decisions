@@ -82,8 +82,8 @@ export function applyFilters(
     // Treat free games as owned by all for filtering purposes
     const effectiveAllOwn = game.is_free || game.all_selected_own
 
-    // Shortlist filter
-    if (filters.shortlistedOnly && shortlistedIds && !shortlistedIds.has(game.id)) return false
+    // Shortlist filter (from filter button or tab)
+    if ((filters.shortlistedOnly || tab === 'shortlisted') && shortlistedIds && !shortlistedIds.has(game.id)) return false
 
     // User filters
     if (filters.ownedByAll && !effectiveAllOwn) return false

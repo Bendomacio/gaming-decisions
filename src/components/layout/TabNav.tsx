@@ -1,17 +1,18 @@
-import { Gamepad2, TrendingUp, Sparkles } from 'lucide-react'
+import { Gamepad2, TrendingUp, Sparkles, Star } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import type { AppTab } from '../../types'
 
 interface TabNavProps {
   activeTab: AppTab
   onTabChange: (tab: AppTab) => void
-  counts?: { all: number; trending: number; new: number }
+  counts?: { all: number; trending: number; new: number; shortlisted: number }
 }
 
 const tabs: { id: AppTab; label: string; icon: typeof Gamepad2 }[] = [
   { id: 'all', label: 'All Games', icon: Gamepad2 },
   { id: 'trending', label: 'Trending', icon: TrendingUp },
   { id: 'new', label: 'New Games', icon: Sparkles },
+  { id: 'shortlisted', label: 'Shortlisted', icon: Star },
 ]
 
 export function TabNav({ activeTab, onTabChange, counts }: TabNavProps) {

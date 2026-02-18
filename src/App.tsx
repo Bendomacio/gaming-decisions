@@ -18,7 +18,7 @@ function App() {
   const { games, loading: gamesLoading, refetch } = useGames(players, selectedPlayerIds)
   const {
     filters, setSearch, toggleSortBy,
-    toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly, toggleShortlistedOnly,
+    toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly,
     toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
     setReleaseDateFilter, resetFilters, updateSelectedPlayers,
   } = useFilters()
@@ -62,6 +62,7 @@ function App() {
   const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds).length
   const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds).length
   const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds).length
+  const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds).length
 
   const loading = playersLoading || gamesLoading
 
@@ -81,7 +82,7 @@ function App() {
         <TabNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          counts={{ all: allCount, trending: trendingCount, new: newCount }}
+          counts={{ all: allCount, trending: trendingCount, new: newCount, shortlisted: shortlistedCount }}
         />
 
         {/* Filters */}
@@ -96,7 +97,6 @@ function App() {
           onToggleOwnedByAll={toggleOwnedByAll}
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
-          onToggleShortlistedOnly={toggleShortlistedOnly}
           onToggleTag={toggleTag}
           onToggleExcludeTag={toggleExcludeTag}
           onToggleGameMode={toggleGameMode}

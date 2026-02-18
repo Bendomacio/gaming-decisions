@@ -1,4 +1,4 @@
-import { Search, X, Filter, Users, Monitor, Calendar, Ban, Star } from 'lucide-react'
+import { Search, X, Filter, Users, Monitor, Calendar, Ban } from 'lucide-react'
 import { Button } from '../ui/Button'
 import type { FilterState, SortOption, GameModeFilters, ProtonFilter, ReleaseDateFilter, AppTab } from '../../types'
 import { cn } from '../../lib/utils'
@@ -14,7 +14,6 @@ interface GameFiltersProps {
   onToggleOwnedByAll: () => void
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
-  onToggleShortlistedOnly: () => void
   onToggleTag: (tag: string) => void
   onToggleExcludeTag: (tag: string) => void
   onToggleGameMode: (mode: keyof GameModeFilters) => void
@@ -67,7 +66,6 @@ export function GameFilters({
   onToggleOwnedByAll,
   onToggleFreeOnly,
   onToggleOnSaleOnly,
-  onToggleShortlistedOnly,
   onToggleTag,
   onToggleExcludeTag,
   onToggleGameMode,
@@ -79,7 +77,6 @@ export function GameFilters({
     filters.ownedByAll,
     filters.freeOnly,
     filters.onSaleOnly,
-    filters.shortlistedOnly,
     filters.genreTags.length > 0,
     filters.excludeGenreTags.length > 0,
     filters.protonFilter !== 'all',
@@ -238,19 +235,6 @@ export function GameFilters({
           )}
         >
           On Sale
-        </button>
-
-        <button
-          onClick={onToggleShortlistedOnly}
-          className={cn(
-            'px-3 py-1 rounded-lg text-xs border transition-all cursor-pointer flex items-center gap-1',
-            filters.shortlistedOnly
-              ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30'
-              : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
-          )}
-        >
-          <Star size={10} fill={filters.shortlistedOnly ? 'currentColor' : 'none'} />
-          Shortlisted
         </button>
 
         <div className="w-px h-4 bg-border" />
