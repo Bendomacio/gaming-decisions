@@ -29,6 +29,17 @@ async function fetchSearchResults(filter: string, count = 50): Promise<number[]>
   }
 }
 
+async function fetchSteamSpyTop(): Promise<number[]> {
+  try {
+    const res = await fetch('https://steamspy.com/api.php?request=top100in2weeks')
+    if (!res.ok) return []
+    const data = await res.json()
+    return Object.entries(data)
+      .filter(([, v]: [string, any]) => (v.average_2weeks ?? 0) >= 500)
+      .map(([k]) => parseInt(k))
+  } catch { return [] }
+}
+
 async function fetchFeaturedCategories(): Promise<number[]> {
   try {
     const res = await fetch('https://store.steampowered.com/api/featuredcategories/')
@@ -155,15 +166,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Discover app IDs from Steam's featured/popular endpoints
-    const [topSellers, popularNew, popularComingSoon, featuredCats] = await Promise.all([
+    // Discover app IDs from Steam's featured/popular endpoints + SteamSpy
+    const [topSellers, popularNew, popularComingSoon, featuredCats, steamSpyTop] = await Promise.all([
       fetchSearchResults('globaltopsellers', 50),
       fetchSearchResults('popularnew', 50),
       fetchSearchResults('popularcomingsoon', 50),
       fetchFeaturedCategories(),
+      fetchSteamSpyTop(),
     ])
 
-    const allDiscovered = new Set([...topSellers, ...popularNew, ...popularComingSoon, ...featuredCats])
+    const allDiscovered = new Set([...topSellers, ...popularNew, ...popularComingSoon, ...featuredCats, ...steamSpyTop])
 
     // Check which are already in our DB
     const { data: existing } = await supabase.from('games').select('steam_app_id')

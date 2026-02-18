@@ -49,7 +49,7 @@ async function fetchSteamSpyTop(): Promise<number[]> {
     if (!res.ok) return []
     const data = await res.json()
     return Object.entries(data)
-      .filter(([, v]: [string, any]) => (v.average_2weeks ?? 0) >= 3000)
+      .filter(([, v]: [string, any]) => (v.average_2weeks ?? 0) >= 500)
       .map(([k]) => parseInt(k))
   } catch { return [] }
 }
