@@ -94,6 +94,7 @@ export type AppTab = 'all' | 'trending' | 'new' | 'shortlisted' | 'excluded'
 export interface FilterState {
   selectedPlayers: string[]
   ownedByAll: boolean
+  ownedByNone: boolean
   freeOnly: boolean
   onSaleOnly: boolean
   shortlistedOnly: boolean

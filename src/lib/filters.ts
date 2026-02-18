@@ -88,6 +88,9 @@ export function applyFilters(
     // Release date filter (applies on all tabs)
     if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
 
+    // Coming soon games only show on the 'new' tab
+    if (game.is_coming_soon && tab !== 'new') return false
+
     // Tab-specific filters
     if (tab === 'trending') {
       if (!game.trending_score || game.trending_score <= 0) return false
@@ -101,6 +104,7 @@ export function applyFilters(
 
     // User filters
     if (filters.ownedByAll && !effectiveAllOwn) return false
+    if (filters.ownedByNone && !game.is_free && game.owner_count > 0) return false
     if (filters.freeOnly && !game.is_free) return false
     if (filters.onSaleOnly && !game.is_on_sale && !game.is_free) return false
 
@@ -128,10 +132,11 @@ export function applyFilters(
   // Sort - user's sort keys apply on ALL tabs, with tab-specific default appended
   const selectedCount = filters.selectedPlayers.length
   const userSort = filters.sortBy
-  const tabDefault: SortOption | null = tab === 'trending' ? 'trending' :
+  const tabDefault: SortOption | null = tab === 'trending' ? 'current_players' :
                                         tab === 'new' ? 'release_date' : null
+  // For 'new' tab, release_date leads unless user explicitly chose it already
   const sortKeys = tabDefault && !userSort.includes(tabDefault)
-    ? [...userSort, tabDefault]
+    ? tab === 'new' ? [tabDefault, ...userSort] : [...userSort, tabDefault]
     : userSort
 
   function compareBySortKey(a: GameWithOwnership, b: GameWithOwnership, sortBy: SortOption): number {

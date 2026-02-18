@@ -4,10 +4,11 @@ import type { FilterState, SortOption, ProtonFilter, ReleaseDateFilter } from '.
 const defaultFilters: FilterState = {
   selectedPlayers: [],
   ownedByAll: false,
+  ownedByNone: false,
   freeOnly: false,
   onSaleOnly: false,
   shortlistedOnly: false,
-  linuxOnly: true,
+  linuxOnly: false,
   genreTags: [],
   excludeGenreTags: ['Massively Multiplayer'],
   sortBy: ['recommendation'],
@@ -19,7 +20,7 @@ const defaultFilters: FilterState = {
     localMultiplayer: false,
   },
   protonFilter: 'all',
-  releaseDateFilter: '5years',
+  releaseDateFilter: 'all',
 }
 
 export function useFilters() {
@@ -47,7 +48,11 @@ export function useFilters() {
   }, [])
 
   const toggleOwnedByAll = useCallback(() => {
-    setFilters(prev => ({ ...prev, ownedByAll: !prev.ownedByAll }))
+    setFilters(prev => ({ ...prev, ownedByAll: !prev.ownedByAll, ownedByNone: false }))
+  }, [])
+
+  const toggleOwnedByNone = useCallback(() => {
+    setFilters(prev => ({ ...prev, ownedByNone: !prev.ownedByNone, ownedByAll: false }))
   }, [])
 
   const toggleFreeOnly = useCallback(() => {
@@ -116,6 +121,7 @@ export function useFilters() {
     setSearch,
     toggleSortBy,
     toggleOwnedByAll,
+    toggleOwnedByNone,
     toggleFreeOnly,
     toggleOnSaleOnly,
     toggleShortlistedOnly,

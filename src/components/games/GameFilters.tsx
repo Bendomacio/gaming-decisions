@@ -12,6 +12,7 @@ interface GameFiltersProps {
   onSearch: (query: string) => void
   onToggleSortBy: (sort: SortOption) => void
   onToggleOwnedByAll: () => void
+  onToggleOwnedByNone: () => void
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
   onToggleLinuxOnly: () => void
@@ -66,6 +67,7 @@ export function GameFilters({
   onSearch,
   onToggleSortBy,
   onToggleOwnedByAll,
+  onToggleOwnedByNone,
   onToggleFreeOnly,
   onToggleOnSaleOnly,
   onToggleLinuxOnly,
@@ -78,14 +80,15 @@ export function GameFilters({
 }: GameFiltersProps) {
   const activeFilterCount = [
     filters.ownedByAll,
+    filters.ownedByNone,
     filters.freeOnly,
     filters.onSaleOnly,
-    !filters.linuxOnly,
+    filters.linuxOnly,
     filters.genreTags.length > 0,
     filters.excludeGenreTags.length > 0,
     filters.protonFilter !== 'all',
     !filters.gameModes.multiplayer || !filters.gameModes.coop || filters.gameModes.singlePlayer || filters.gameModes.localMultiplayer,
-    filters.releaseDateFilter !== '5years',
+    filters.releaseDateFilter !== 'all',
   ].filter(Boolean).length
 
   return (
@@ -224,6 +227,18 @@ export function GameFilters({
           )}
         >
           Everyone Owns
+        </button>
+
+        <button
+          onClick={onToggleOwnedByNone}
+          className={cn(
+            'px-3 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+            filters.ownedByNone
+              ? 'bg-accent/15 text-accent border-accent/30'
+              : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+          )}
+        >
+          Try Something New
         </button>
 
         <button
