@@ -93,10 +93,10 @@ export function applyFilters(
     // Release date filter (applies on all tabs)
     if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
 
-    // Coming soon games only show on the 'coming_soon' tab
+    // Coming soon games show on 'coming_soon' and 'shortlisted' tabs only
     if (tab === 'coming_soon') {
       if (!game.is_coming_soon) return false
-    } else {
+    } else if (tab !== 'shortlisted') {
       if (game.is_coming_soon) return false
     }
 

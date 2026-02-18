@@ -2,7 +2,7 @@ import type { ProtonFilter, ReleaseDateFilter, GameModeFilters, SortOption, AppT
 
 export interface TabDefaults {
   minReviewCount: number
-  sortBy: SortOption
+  sortBy: SortOption[]
   gameModes: GameModeFilters
 }
 
@@ -26,25 +26,35 @@ export const DEFAULT_CONFIG: AppConfig = {
   tabs: {
     all: {
       minReviewCount: 150,
-      sortBy: 'recommendation',
+      sortBy: ['recommendation'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: false, localMultiplayer: false },
     },
     trending: {
       minReviewCount: 0,
-      sortBy: 'current_players',
+      sortBy: ['current_players'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
     new: {
       minReviewCount: 0,
-      sortBy: 'release_date',
+      sortBy: ['release_date'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
     coming_soon: {
       minReviewCount: 0,
-      sortBy: 'release_date',
+      sortBy: ['release_date'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
   },
+}
+
+function migrateTabDefaults(defaults: TabDefaults, saved: Record<string, unknown> | undefined): TabDefaults {
+  if (!saved) return defaults
+  const merged = { ...defaults, ...saved }
+  // Migrate old string sortBy to array
+  if (typeof merged.sortBy === 'string') {
+    merged.sortBy = [merged.sortBy as SortOption]
+  }
+  return merged
 }
 
 export function loadConfig(): AppConfig {
@@ -56,10 +66,10 @@ export function loadConfig(): AppConfig {
         ...DEFAULT_CONFIG,
         ...parsed,
         tabs: {
-          all: { ...DEFAULT_CONFIG.tabs.all, ...parsed.tabs?.all },
-          trending: { ...DEFAULT_CONFIG.tabs.trending, ...parsed.tabs?.trending },
-          new: { ...DEFAULT_CONFIG.tabs.new, ...parsed.tabs?.new },
-          coming_soon: { ...DEFAULT_CONFIG.tabs.coming_soon, ...parsed.tabs?.coming_soon },
+          all: migrateTabDefaults(DEFAULT_CONFIG.tabs.all, parsed.tabs?.all),
+          trending: migrateTabDefaults(DEFAULT_CONFIG.tabs.trending, parsed.tabs?.trending),
+          new: migrateTabDefaults(DEFAULT_CONFIG.tabs.new, parsed.tabs?.new),
+          coming_soon: migrateTabDefaults(DEFAULT_CONFIG.tabs.coming_soon, parsed.tabs?.coming_soon),
         },
       }
     }

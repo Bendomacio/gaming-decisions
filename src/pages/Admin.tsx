@@ -418,9 +418,10 @@ export function Admin() {
                 </div>
               </div>
 
-              {/* Default Sort (per tab) */}
+              {/* Default Sort Stack (per tab) */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-text-secondary">Default Sort</label>
+                <label className="text-sm font-medium text-text-secondary">Default Sort Stack</label>
+                <p className="text-xs text-text-muted">Click to toggle. Order shown by number badges — first is primary sort.</p>
                 <div className="flex flex-wrap gap-1.5">
                   {([
                     ['recommendation', 'Recommended'],
@@ -431,18 +432,36 @@ export function Admin() {
                     ['release_date', 'Release Date'],
                     ['name', 'Name'],
                     ['recently_added', 'Recently Added'],
-                  ] as [SortOption, string][]).map(([value, label]) => (
-                    <button
-                      key={value}
-                      onClick={() => setConfig(prev => ({
-                        ...prev,
-                        tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], sortBy: value } },
-                      }))}
-                      className={`${toggleBtn} ${config.tabs[settingsTab].sortBy === value ? toggleOn : toggleOff}`}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  ] as [SortOption, string][]).map(([value, label]) => {
+                    const currentSort = config.tabs[settingsTab].sortBy
+                    const idx = currentSort.indexOf(value)
+                    const isActive = idx !== -1
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => setConfig(prev => {
+                          const cur = prev.tabs[settingsTab].sortBy
+                          const i = cur.indexOf(value)
+                          let next: SortOption[]
+                          if (i !== -1) {
+                            next = cur.filter(s => s !== value)
+                            if (next.length === 0) next = ['recommendation']
+                          } else {
+                            next = [...cur, value]
+                          }
+                          return { ...prev, tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], sortBy: next } } }
+                        })}
+                        className={`${toggleBtn} ${isActive ? toggleOn : toggleOff} relative`}
+                      >
+                        {isActive && (
+                          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-accent text-white text-[9px] font-bold mr-1">
+                            {idx + 1}
+                          </span>
+                        )}
+                        {label}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 

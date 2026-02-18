@@ -15,7 +15,7 @@ function buildDefaults(tab: AppTab = 'all'): FilterState {
     linuxOnly: config.defaultLinuxOnly,
     genreTags: [],
     excludeGenreTags: [...config.defaultExcludeTags],
-    sortBy: [tabDef.sortBy],
+    sortBy: [...tabDef.sortBy],
     searchQuery: '',
     gameModes: { ...tabDef.gameModes },
     protonFilter: config.defaultProtonFilter,
@@ -32,7 +32,7 @@ export function useFilters() {
       const tabDef = getTabDefaults(tab)
       return {
         ...prev,
-        sortBy: [tabDef.sortBy],
+        sortBy: [...tabDef.sortBy],
         gameModes: { ...tabDef.gameModes },
         minReviewCount: tabDef.minReviewCount,
       }
