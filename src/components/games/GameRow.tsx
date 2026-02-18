@@ -164,30 +164,33 @@ export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowPr
         )}
       </div>
 
-      {/* Price (Steam + Key in £) */}
-      <div className="flex-shrink-0 w-[90px]">
+      {/* Steam Price */}
+      <div className="flex-shrink-0 w-[60px] text-center">
         {game.is_free ? (
-          <span className="text-xs font-semibold text-success">Free</span>
+          <span className="text-[10px] font-semibold text-success">Free</span>
         ) : (
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-between text-[10px]">
-              <span className="text-text-muted">Steam:</span>
-              <span className={cn(
-                'font-medium',
-                game.is_on_sale ? 'text-warning' : 'text-text-secondary'
-              )}>
-                {formatPriceGBP(game.steam_price_cents)}
-              </span>
-            </div>
-            {game.best_price_cents !== null && game.best_price_cents < (game.steam_price_cents ?? Infinity) ? (
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-text-muted">Key:</span>
-                <span className="font-semibold text-success">
-                  {formatPriceGBP(game.best_price_cents)}
-                </span>
-              </div>
-            ) : null}
-          </div>
+          <span className={cn(
+            'text-[11px] font-medium',
+            game.is_on_sale ? 'text-warning' : 'text-text-secondary'
+          )}>
+            {formatPriceGBP(game.steam_price_cents)}
+          </span>
+        )}
+      </div>
+
+      {/* Key Price */}
+      <div className="flex-shrink-0 w-[60px] text-center">
+        {game.is_free ? (
+          <span className="text-[10px] text-text-muted">--</span>
+        ) : game.best_price_cents !== null ? (
+          <span className={cn(
+            'text-[11px] font-semibold',
+            game.best_price_cents < (game.steam_price_cents ?? Infinity) ? 'text-success' : 'text-text-secondary'
+          )}>
+            {formatPriceGBP(game.best_price_cents)}
+          </span>
+        ) : (
+          <span className="text-[10px] text-text-muted">--</span>
         )}
       </div>
 

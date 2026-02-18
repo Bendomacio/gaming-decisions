@@ -30,7 +30,8 @@ const columns: ColumnHeader[] = [
   { label: 'OpenCritic', width: 'w-[60px]', align: 'center' },
   { label: 'Linux', width: 'w-[70px]', align: 'center' },
   { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center' },
-  { label: 'Price', sortKey: 'price_asc', width: 'w-[90px]', align: 'center' },
+  { label: 'Steam £', sortKey: 'price_asc', width: 'w-[60px]', align: 'center' },
+  { label: 'Key £', width: 'w-[60px]', align: 'center' },
   { label: '', width: 'w-6' },                                // steam link
 ]
 

@@ -114,7 +114,7 @@ function isMultiplayer(categories: string[]): boolean {
 
 function isLinuxCompatible(platforms: { linux: boolean }, protonRating: string | null): boolean {
   if (platforms.linux) return true
-  if (protonRating && ['platinum', 'gold', 'native'].includes(protonRating)) return true
+  if (protonRating && ['platinum', 'gold', 'silver', 'native'].includes(protonRating)) return true
   return false
 }
 
