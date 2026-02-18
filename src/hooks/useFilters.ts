@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { FilterState, SortOption } from '../types'
+import type { FilterState, SortOption, ProtonFilter, ReleaseDateFilter } from '../types'
 
 const defaultFilters: FilterState = {
   selectedPlayers: [],
@@ -9,6 +9,14 @@ const defaultFilters: FilterState = {
   genreTags: [],
   sortBy: 'recommendation',
   searchQuery: '',
+  gameModes: {
+    multiplayer: true,
+    coop: true,
+    singlePlayer: false,
+    localMultiplayer: false,
+  },
+  protonFilter: 'all',
+  releaseDateFilter: 'all',
 }
 
 export function useFilters() {
@@ -43,6 +51,21 @@ export function useFilters() {
     }))
   }, [])
 
+  const toggleGameMode = useCallback((mode: keyof FilterState['gameModes']) => {
+    setFilters(prev => ({
+      ...prev,
+      gameModes: { ...prev.gameModes, [mode]: !prev.gameModes[mode] },
+    }))
+  }, [])
+
+  const setProtonFilter = useCallback((filter: ProtonFilter) => {
+    setFilters(prev => ({ ...prev, protonFilter: filter }))
+  }, [])
+
+  const setReleaseDateFilter = useCallback((filter: ReleaseDateFilter) => {
+    setFilters(prev => ({ ...prev, releaseDateFilter: filter }))
+  }, [])
+
   const resetFilters = useCallback(() => {
     setFilters(prev => ({ ...defaultFilters, selectedPlayers: prev.selectedPlayers }))
   }, [])
@@ -59,6 +82,9 @@ export function useFilters() {
     toggleFreeOnly,
     toggleOnSaleOnly,
     toggleTag,
+    toggleGameMode,
+    setProtonFilter,
+    setReleaseDateFilter,
     resetFilters,
     updateSelectedPlayers,
   }

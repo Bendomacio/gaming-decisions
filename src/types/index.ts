@@ -77,6 +77,17 @@ export interface GameWithOwnership extends Game {
   missing_players: Player[]
 }
 
+export interface GameModeFilters {
+  multiplayer: boolean
+  coop: boolean
+  singlePlayer: boolean
+  localMultiplayer: boolean
+}
+
+export type ProtonFilter = 'all' | 'native' | 'platinum' | 'gold'
+export type ReleaseDateFilter = 'week' | 'month' | '3months' | '6months' | 'year' | 'all'
+export type AppTab = 'all' | 'trending' | 'new'
+
 export interface FilterState {
   selectedPlayers: string[]
   ownedByAll: boolean
@@ -85,6 +96,9 @@ export interface FilterState {
   genreTags: string[]
   sortBy: SortOption
   searchQuery: string
+  gameModes: GameModeFilters
+  protonFilter: ProtonFilter
+  releaseDateFilter: ReleaseDateFilter
 }
 
 export type SortOption =
@@ -95,6 +109,8 @@ export type SortOption =
   | 'playtime'
   | 'name'
   | 'recently_added'
+  | 'trending'
+  | 'release_date'
 
 export interface SteamOwnedGame {
   appid: number

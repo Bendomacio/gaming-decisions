@@ -1,6 +1,6 @@
-import { Search, SlidersHorizontal, X, Filter } from 'lucide-react'
+import { Search, X, Filter, Users, Monitor, Calendar } from 'lucide-react'
 import { Button } from '../ui/Button'
-import type { FilterState, SortOption } from '../../types'
+import type { FilterState, SortOption, GameModeFilters, ProtonFilter, ReleaseDateFilter, AppTab } from '../../types'
 import { cn } from '../../lib/utils'
 
 interface GameFiltersProps {
@@ -8,12 +8,16 @@ interface GameFiltersProps {
   totalCount: number
   filteredCount: number
   availableTags: string[]
+  activeTab: AppTab
   onSearch: (query: string) => void
   onSortBy: (sort: SortOption) => void
   onToggleOwnedByAll: () => void
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
   onToggleTag: (tag: string) => void
+  onToggleGameMode: (mode: keyof GameModeFilters) => void
+  onSetProtonFilter: (filter: ProtonFilter) => void
+  onSetReleaseDateFilter: (filter: ReleaseDateFilter) => void
   onReset: () => void
 }
 
@@ -24,7 +28,30 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'price_desc', label: 'Price: High' },
   { value: 'playtime', label: 'Playtime' },
   { value: 'name', label: 'Name' },
-  { value: 'recently_added', label: 'New' },
+  { value: 'recently_added', label: 'Recently Added' },
+]
+
+const gameModeOptions: { key: keyof GameModeFilters; label: string }[] = [
+  { key: 'multiplayer', label: 'Multiplayer' },
+  { key: 'coop', label: 'Co-op' },
+  { key: 'singlePlayer', label: 'Single Player' },
+  { key: 'localMultiplayer', label: 'Local MP' },
+]
+
+const protonOptions: { value: ProtonFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'native', label: 'Native' },
+  { value: 'platinum', label: 'Platinum+' },
+  { value: 'gold', label: 'Gold+' },
+]
+
+const releaseDateOptions: { value: ReleaseDateFilter; label: string }[] = [
+  { value: 'all', label: 'Any time' },
+  { value: 'week', label: 'Past Week' },
+  { value: 'month', label: 'Past Month' },
+  { value: '3months', label: 'Past 3 Months' },
+  { value: '6months', label: 'Past 6 Months' },
+  { value: 'year', label: 'Past Year' },
 ]
 
 export function GameFilters({
@@ -32,19 +59,31 @@ export function GameFilters({
   totalCount,
   filteredCount,
   availableTags,
+  activeTab,
   onSearch,
   onSortBy,
   onToggleOwnedByAll,
   onToggleFreeOnly,
   onToggleOnSaleOnly,
   onToggleTag,
+  onToggleGameMode,
+  onSetProtonFilter,
+  onSetReleaseDateFilter,
   onReset,
 }: GameFiltersProps) {
-  const hasActiveFilters = filters.ownedByAll || filters.freeOnly || filters.onSaleOnly || filters.genreTags.length > 0
+  const activeFilterCount = [
+    filters.ownedByAll,
+    filters.freeOnly,
+    filters.onSaleOnly,
+    filters.genreTags.length > 0,
+    filters.protonFilter !== 'all',
+    !filters.gameModes.multiplayer || !filters.gameModes.coop || filters.gameModes.singlePlayer || filters.gameModes.localMultiplayer,
+    filters.releaseDateFilter !== 'all',
+  ].filter(Boolean).length
 
   return (
-    <div className="space-y-3">
-      {/* Search + Sort row */}
+    <div className="space-y-2.5 bg-bg-secondary border border-border rounded-xl p-3">
+      {/* Row 1: Search + Sort */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -65,26 +104,91 @@ export function GameFilters({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 bg-bg-input border border-border rounded-lg p-1">
-          <SlidersHorizontal size={12} className="text-text-muted ml-1.5" />
-          {sortOptions.map(opt => (
+        {activeTab === 'all' && (
+          <div className="flex items-center gap-1 bg-bg-input border border-border rounded-lg p-1">
+            {sortOptions.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => onSortBy(opt.value)}
+                className={cn(
+                  'px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer whitespace-nowrap',
+                  filters.sortBy === opt.value
+                    ? 'bg-accent text-white'
+                    : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Row 2: Game Mode Filters + Proton */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Users size={12} className="text-text-muted" />
+          {gameModeOptions.map(opt => (
             <button
-              key={opt.value}
-              onClick={() => onSortBy(opt.value)}
+              key={opt.key}
+              onClick={() => onToggleGameMode(opt.key)}
               className={cn(
-                'px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer',
-                filters.sortBy === opt.value
-                  ? 'bg-accent text-white'
-                  : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+                'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+                filters.gameModes[opt.key]
+                  ? 'bg-accent-dim text-accent-hover border-border-accent'
+                  : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
               )}
             >
               {opt.label}
             </button>
           ))}
         </div>
+
+        <div className="w-px h-5 bg-border" />
+
+        <div className="flex items-center gap-2">
+          <Monitor size={12} className="text-text-muted" />
+          {protonOptions.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => onSetProtonFilter(opt.value)}
+              className={cn(
+                'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+                filters.protonFilter === opt.value
+                  ? 'bg-accent-dim text-accent-hover border-border-accent'
+                  : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'new' && (
+          <>
+            <div className="w-px h-5 bg-border" />
+            <div className="flex items-center gap-2">
+              <Calendar size={12} className="text-text-muted" />
+              {releaseDateOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => onSetReleaseDateFilter(opt.value)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+                    filters.releaseDateFilter === opt.value
+                      ? 'bg-accent-dim text-accent-hover border-border-accent'
+                      : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Filter toggles */}
+      {/* Row 3: Quick Filters + Genre Tags */}
       <div className="flex items-center gap-2 flex-wrap">
         <Filter size={12} className="text-text-muted" />
 
@@ -124,12 +228,14 @@ export function GameFilters({
           On Sale
         </button>
 
+        <div className="w-px h-4 bg-border" />
+
         {availableTags.slice(0, 8).map(tag => (
           <button
             key={tag}
             onClick={() => onToggleTag(tag)}
             className={cn(
-              'px-3 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+              'px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer',
               filters.genreTags.includes(tag)
                 ? 'bg-accent-dim text-accent-hover border-border-accent'
                 : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
@@ -139,10 +245,10 @@ export function GameFilters({
           </button>
         ))}
 
-        {hasActiveFilters && (
+        {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onReset}>
             <X size={12} />
-            Clear
+            Clear ({activeFilterCount})
           </Button>
         )}
 

@@ -1,19 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Header } from './components/layout/Header'
+import { TabNav } from './components/layout/TabNav'
 import { PlayerSelector } from './components/players/PlayerSelector'
-import { GameGrid } from './components/games/GameGrid'
+import { GameTable } from './components/games/GameTable'
 import { GameFilters } from './components/games/GameFilters'
 import { GameDetailPanel } from './components/games/GameDetailPanel'
-import { QuickPick } from './components/dashboard/QuickPick'
-import { TrendingSection } from './components/dashboard/TrendingSection'
-import { ComingSoon } from './components/dashboard/ComingSoon'
-import { StatsOverview } from './components/dashboard/StatsOverview'
 import { usePlayers } from './hooks/usePlayers'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
-import { fetchLatestSync, fetchPlayerGames } from './lib/api'
+import { fetchLatestSync } from './lib/api'
 import { applyFilters, getAvailableTags } from './lib/filters'
-import type { GameWithOwnership, SyncLog, PlayerGame } from './types'
+import type { GameWithOwnership, SyncLog, AppTab } from './types'
 
 function App() {
   const { players, selectedPlayerIds, togglePlayer, loading: playersLoading } = usePlayers()
@@ -21,23 +18,23 @@ function App() {
   const {
     filters, setSearch, setSortBy,
     toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly,
-    toggleTag, resetFilters, updateSelectedPlayers,
+    toggleTag, toggleGameMode, setProtonFilter,
+    setReleaseDateFilter, resetFilters, updateSelectedPlayers,
   } = useFilters()
 
+  const [activeTab, setActiveTab] = useState<AppTab>('all')
   const [selectedGame, setSelectedGame] = useState<GameWithOwnership | null>(null)
   const [lastSync, setLastSync] = useState<SyncLog | null>(null)
   const [syncing, setSyncing] = useState(false)
-  const [allPlayerGames, setAllPlayerGames] = useState<PlayerGame[]>([])
 
   // Keep filter state synced with selected players
   useEffect(() => {
     updateSelectedPlayers(selectedPlayerIds)
   }, [selectedPlayerIds, updateSelectedPlayers])
 
-  // Load sync status and player games
+  // Load sync status
   useEffect(() => {
     fetchLatestSync().then(setLastSync).catch(console.error)
-    fetchPlayerGames().then(setAllPlayerGames).catch(console.error)
   }, [])
 
   const handleRefresh = async () => {
@@ -46,17 +43,20 @@ function App() {
       await refetch()
       const sync = await fetchLatestSync()
       setLastSync(sync)
-      const pg = await fetchPlayerGames()
-      setAllPlayerGames(pg)
     } finally {
       setSyncing(false)
     }
   }
 
-  // Apply filters
+  // Apply filters per tab
   const filtersWithPlayers = { ...filters, selectedPlayers: selectedPlayerIds }
-  const filteredGames = applyFilters(games, filtersWithPlayers)
+  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab)
   const availableTags = getAvailableTags(games)
+
+  // Tab counts
+  const allCount = applyFilters(games, filtersWithPlayers, 'all').length
+  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending').length
+  const newCount = applyFilters(games, filtersWithPlayers, 'new').length
 
   const loading = playersLoading || gamesLoading
 
@@ -64,7 +64,7 @@ function App() {
     <div className="min-h-screen bg-bg-primary">
       <Header lastSync={lastSync} onRefresh={handleRefresh} syncing={syncing} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-4">
         {/* Player selector */}
         <PlayerSelector
           players={players}
@@ -72,43 +72,12 @@ function App() {
           onToggle={togglePlayer}
         />
 
-        {/* Quick picks */}
-        {!loading && games.length > 0 && (
-          <QuickPick
-            games={filteredGames}
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            onGameClick={setSelectedGame}
-          />
-        )}
-
-        {/* Trending */}
-        {!loading && games.length > 0 && (
-          <TrendingSection
-            games={filteredGames}
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            onGameClick={setSelectedGame}
-          />
-        )}
-
-        {/* Coming Soon */}
-        {!loading && games.length > 0 && (
-          <ComingSoon
-            games={games}
-            onGameClick={setSelectedGame}
-          />
-        )}
-
-        {/* Stats overview */}
-        {!loading && games.length > 0 && (
-          <StatsOverview
-            games={games}
-            players={players}
-            selectedPlayerIds={selectedPlayerIds}
-            allPlayerGames={allPlayerGames}
-          />
-        )}
+        {/* Tab navigation */}
+        <TabNav
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          counts={{ all: allCount, trending: trendingCount, new: newCount }}
+        />
 
         {/* Filters */}
         <GameFilters
@@ -116,21 +85,27 @@ function App() {
           totalCount={games.length}
           filteredCount={filteredGames.length}
           availableTags={availableTags}
+          activeTab={activeTab}
           onSearch={setSearch}
           onSortBy={setSortBy}
           onToggleOwnedByAll={toggleOwnedByAll}
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
           onToggleTag={toggleTag}
+          onToggleGameMode={toggleGameMode}
+          onSetProtonFilter={setProtonFilter}
+          onSetReleaseDateFilter={setReleaseDateFilter}
           onReset={resetFilters}
         />
 
-        {/* Game grid */}
-        <GameGrid
+        {/* Game table */}
+        <GameTable
           games={filteredGames}
           players={players}
           selectedPlayerIds={selectedPlayerIds}
           loading={loading}
+          sortBy={filters.sortBy}
+          onSortBy={setSortBy}
           onGameClick={setSelectedGame}
         />
       </main>

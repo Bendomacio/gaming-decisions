@@ -1,15 +1,81 @@
-import type { GameWithOwnership, FilterState } from '../types'
+import type { GameWithOwnership, FilterState, AppTab } from '../types'
 import { calculateRecommendationScore } from './api'
+
+const MULTIPLAYER_CATS = ['Multi-player', 'Online Multi-Player']
+const COOP_CATS = ['Co-op', 'Online Co-op']
+const SINGLE_PLAYER_CATS = ['Single-player']
+const LOCAL_MP_CATS = ['Shared/Split Screen', 'Shared/Split Screen Co-op', 'LAN Co-op', 'Shared/Split Screen PvP']
+
+function matchesGameModes(categories: string[], filters: FilterState['gameModes']): boolean {
+  const hasMP = categories.some(c => MULTIPLAYER_CATS.includes(c))
+  const hasCoop = categories.some(c => COOP_CATS.includes(c))
+  const hasSP = categories.some(c => SINGLE_PLAYER_CATS.includes(c))
+  const hasLocal = categories.some(c => LOCAL_MP_CATS.includes(c))
+
+  // Game must match at least one enabled mode
+  const enabledModes: boolean[] = []
+  if (filters.multiplayer) enabledModes.push(hasMP)
+  if (filters.coop) enabledModes.push(hasCoop)
+  if (filters.singlePlayer) enabledModes.push(hasSP)
+  if (filters.localMultiplayer) enabledModes.push(hasLocal)
+
+  // If no modes enabled, show all
+  if (enabledModes.length === 0) return true
+  return enabledModes.some(Boolean)
+}
+
+function matchesProtonFilter(rating: string | null, filter: FilterState['protonFilter']): boolean {
+  if (filter === 'all') return true
+  if (filter === 'native') return rating === 'native'
+  if (filter === 'platinum') return rating === 'native' || rating === 'platinum'
+  if (filter === 'gold') return rating === 'native' || rating === 'platinum' || rating === 'gold'
+  return true
+}
+
+function matchesReleaseDate(releaseDate: string | null, filter: FilterState['releaseDateFilter']): boolean {
+  if (filter === 'all') return true
+  if (!releaseDate) return false
+
+  const date = new Date(releaseDate)
+  if (isNaN(date.getTime())) return false
+
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = diffMs / (1000 * 60 * 60 * 24)
+
+  switch (filter) {
+    case 'week': return diffDays <= 7
+    case 'month': return diffDays <= 30
+    case '3months': return diffDays <= 90
+    case '6months': return diffDays <= 180
+    case 'year': return diffDays <= 365
+    default: return true
+  }
+}
 
 export function applyFilters(
   games: GameWithOwnership[],
-  filters: FilterState
+  filters: FilterState,
+  tab: AppTab = 'all'
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
-    // Hard rules already applied at DB level, but double-check
-    if (!game.is_multiplayer) return false
+    // Don't hard-filter by multiplayer/linux anymore - let game mode filters handle it
     if (!game.supports_linux) return false
     if (game.servers_deprecated) return false
+
+    // Game mode filters
+    if (!matchesGameModes(game.categories, filters.gameModes)) return false
+
+    // Proton filter
+    if (!matchesProtonFilter(game.protondb_rating, filters.protonFilter)) return false
+
+    // Tab-specific filters
+    if (tab === 'new') {
+      if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
+    }
+    if (tab === 'trending') {
+      if (!game.trending_score || game.trending_score <= 0) return false
+    }
 
     // User filters
     if (filters.ownedByAll && !game.all_selected_own) return false
@@ -33,8 +99,12 @@ export function applyFilters(
 
   // Sort
   const selectedCount = filters.selectedPlayers.length
+  const sortBy = tab === 'trending' ? 'trending' as const :
+                 tab === 'new' ? 'release_date' as const :
+                 filters.sortBy
+
   filtered.sort((a, b) => {
-    switch (filters.sortBy) {
+    switch (sortBy) {
       case 'recommendation':
         return calculateRecommendationScore(b, selectedCount) - calculateRecommendationScore(a, selectedCount)
       case 'price_asc': {
@@ -58,6 +128,13 @@ export function applyFilters(
         return a.name.localeCompare(b.name)
       case 'recently_added':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case 'trending':
+        return (b.trending_score ?? 0) - (a.trending_score ?? 0)
+      case 'release_date': {
+        const dateA = a.release_date ? new Date(a.release_date).getTime() : 0
+        const dateB = b.release_date ? new Date(b.release_date).getTime() : 0
+        return dateB - dateA
+      }
       default:
         return 0
     }
