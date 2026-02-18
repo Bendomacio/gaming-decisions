@@ -5,6 +5,7 @@ export interface Player {
   steam_profile_url: string
   avatar_url: string | null
   is_primary: boolean
+  requires_mac: boolean
   last_synced_at: string | null
   created_at: string
 }
@@ -19,6 +20,7 @@ export interface Game {
   max_players: number | null
   min_players: number | null
   supports_linux: boolean
+  supports_mac: boolean
   protondb_rating: ProtonDBRating | null
   has_active_servers: boolean
   servers_deprecated: boolean

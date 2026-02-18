@@ -66,16 +66,17 @@ function App() {
 
   // Apply filters per tab
   const filtersWithPlayers = { ...filters, selectedPlayers: selectedPlayerIds }
-  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab, shortlistedIds, excludedIds)
+  const macRequired = players.some(p => selectedPlayerIds.includes(p.id) && p.requires_mac)
+  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab, shortlistedIds, excludedIds, macRequired)
   const availableTags = getAvailableTags(games)
 
   // Tab counts
-  const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds, excludedIds).length
-  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds, excludedIds).length
-  const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds, excludedIds).length
-  const comingSoonCount = applyFilters(games, filtersWithPlayers, 'coming_soon', shortlistedIds, excludedIds).length
-  const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds, excludedIds).length
-  const excludedCount = applyFilters(games, filtersWithPlayers, 'excluded', shortlistedIds, excludedIds).length
+  const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds, excludedIds, macRequired).length
+  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds, excludedIds, macRequired).length
+  const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds, excludedIds, macRequired).length
+  const comingSoonCount = applyFilters(games, filtersWithPlayers, 'coming_soon', shortlistedIds, excludedIds, macRequired).length
+  const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds, excludedIds, macRequired).length
+  const excludedCount = applyFilters(games, filtersWithPlayers, 'excluded', shortlistedIds, excludedIds, macRequired).length
 
   const loading = playersLoading || gamesLoading
 

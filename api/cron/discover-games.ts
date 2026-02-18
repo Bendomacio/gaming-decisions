@@ -212,6 +212,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         description: storeData.short_description,
         is_multiplayer: categories.some(c => MULTIPLAYER_CATEGORIES.includes(c)),
         supports_linux: storeData.platforms.linux || ['native', 'platinum', 'gold', 'silver'].includes(protonRating ?? ''),
+        supports_mac: storeData.platforms.mac,
         protondb_rating: protonRating,
         steam_review_score: reviews?.score ?? null,
         steam_review_desc: reviews?.desc ?? null,

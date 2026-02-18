@@ -60,13 +60,17 @@ export function applyFilters(
   filters: FilterState,
   tab: AppTab = 'all',
   shortlistedIds?: Set<string>,
-  excludedIds?: Set<string>
+  excludedIds?: Set<string>,
+  macRequired?: boolean
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
     if (game.servers_deprecated) return false
 
     // Linux filter (togglable, default on)
     if (filters.linuxOnly && !game.supports_linux) return false
+
+    // macOS filter (auto-applied when a mac-required player is selected)
+    if (macRequired && !game.supports_mac) return false
 
     // Excluded games: hide from all tabs except 'excluded', only show on 'excluded'
     if (tab === 'excluded') {
