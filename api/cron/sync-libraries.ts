@@ -124,6 +124,24 @@ function isMultiplayer(categories: string[]): boolean {
   return categories.some(cat => MULTIPLAYER_CATEGORIES.includes(cat))
 }
 
+function inferMaxPlayers(categories: string[], tags: string[]): number | null {
+  const allLabels = [...categories, ...tags].map(s => s.toLowerCase())
+  if (allLabels.some(t => t.includes('massively multiplayer') || t.includes('mmo'))) return 999
+  if (allLabels.some(t => t.includes('battle royale'))) return 100
+
+  const hasMP = categories.some(c => ['Multi-player', 'Online Multi-Player'].includes(c))
+  const hasCoop = categories.some(c => ['Co-op', 'Online Co-op'].includes(c))
+  const hasSP = categories.some(c => c === 'Single-player')
+  const hasLocal = categories.some(c => ['Shared/Split Screen', 'Shared/Split Screen Co-op', 'Shared/Split Screen PvP'].includes(c))
+
+  if (hasSP && !hasMP && !hasCoop && !hasLocal) return 1
+  if (hasLocal && !hasMP && !hasCoop) return 4
+  if (hasCoop && !hasMP) return 4
+  if (hasMP && hasCoop) return 8
+  if (hasMP) return 16
+  return null
+}
+
 function isLinuxCompatible(platforms: { linux: boolean }, protonRating: string | null): boolean {
   if (platforms.linux) return true
   if (protonRating && ['platinum', 'gold', 'silver', 'native'].includes(protonRating)) return true
@@ -222,6 +240,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         is_coming_soon: storeData.release_date?.coming_soon ?? false,
         steam_tags: steamSpyTags ?? genres,
         categories: categories,
+        max_players: inferMaxPlayers(categories, steamSpyTags ?? genres),
         last_updated_at: new Date().toISOString(),
       }, { onConflict: 'steam_app_id' })
 
