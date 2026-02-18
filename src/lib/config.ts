@@ -13,7 +13,7 @@ export interface AppConfig {
   defaultExcludeTags: string[]
   defaultProtonFilter: ProtonFilter
   // Per-tab defaults
-  tabs: Record<'all' | 'trending' | 'new', TabDefaults>
+  tabs: Record<'all' | 'trending' | 'new' | 'coming_soon', TabDefaults>
 }
 
 const STORAGE_KEY = 'gaming-decisions-config'
@@ -39,6 +39,11 @@ export const DEFAULT_CONFIG: AppConfig = {
       sortBy: 'release_date',
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
+    coming_soon: {
+      minReviewCount: 0,
+      sortBy: 'release_date',
+      gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
+    },
   },
 }
 
@@ -54,6 +59,7 @@ export function loadConfig(): AppConfig {
           all: { ...DEFAULT_CONFIG.tabs.all, ...parsed.tabs?.all },
           trending: { ...DEFAULT_CONFIG.tabs.trending, ...parsed.tabs?.trending },
           new: { ...DEFAULT_CONFIG.tabs.new, ...parsed.tabs?.new },
+          coming_soon: { ...DEFAULT_CONFIG.tabs.coming_soon, ...parsed.tabs?.coming_soon },
         },
       }
     }
@@ -67,7 +73,7 @@ export function saveConfig(config: AppConfig) {
 
 export function getTabDefaults(tab: AppTab): TabDefaults {
   const config = loadConfig()
-  if (tab === 'all' || tab === 'trending' || tab === 'new') {
+  if (tab === 'all' || tab === 'trending' || tab === 'new' || tab === 'coming_soon') {
     return config.tabs[tab]
   }
   // Shortlisted/excluded use 'all' tab defaults

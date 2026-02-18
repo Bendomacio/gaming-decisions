@@ -73,6 +73,7 @@ function App() {
   const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds, excludedIds).length
   const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds, excludedIds).length
   const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds, excludedIds).length
+  const comingSoonCount = applyFilters(games, filtersWithPlayers, 'coming_soon', shortlistedIds, excludedIds).length
   const shortlistedCount = applyFilters(games, filtersWithPlayers, 'shortlisted', shortlistedIds, excludedIds).length
   const excludedCount = applyFilters(games, filtersWithPlayers, 'excluded', shortlistedIds, excludedIds).length
 
@@ -94,7 +95,7 @@ function App() {
         <TabNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          counts={{ all: allCount, trending: trendingCount, new: newCount, shortlisted: shortlistedCount, excluded: excludedCount }}
+          counts={{ all: allCount, trending: trendingCount, new: newCount, coming_soon: comingSoonCount, shortlisted: shortlistedCount, excluded: excludedCount }}
         />
 
         {/* Filters */}

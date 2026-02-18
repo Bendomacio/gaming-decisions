@@ -21,7 +21,7 @@ interface DiscoverState {
   results: GameResult[]
 }
 
-type SettingsTab = 'all' | 'trending' | 'new'
+type SettingsTab = 'all' | 'trending' | 'new' | 'coming_soon'
 
 export function Admin() {
   const [running, setRunning] = useState(false)
@@ -372,6 +372,7 @@ export function Admin() {
                 ['all', 'All Games'],
                 ['trending', 'Trending'],
                 ['new', 'New Games'],
+                ['coming_soon', 'Coming Soon'],
               ] as [SettingsTab, string][]).map(([tab, label]) => (
                 <button
                   key={tab}

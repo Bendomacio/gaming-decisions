@@ -89,7 +89,7 @@ export interface GameModeFilters {
 
 export type ProtonFilter = 'all' | 'native' | 'platinum' | 'gold'
 export type ReleaseDateFilter = 'week' | 'month' | '3months' | '6months' | 'year' | '2years' | '3years' | '5years' | '10years' | 'all'
-export type AppTab = 'all' | 'trending' | 'new' | 'shortlisted' | 'excluded'
+export type AppTab = 'all' | 'trending' | 'new' | 'coming_soon' | 'shortlisted' | 'excluded'
 
 export interface FilterState {
   selectedPlayers: string[]
