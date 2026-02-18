@@ -30,11 +30,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let gamesUpdated = 0
 
   try {
-    // Get games that are multiplayer + linux compatible (the ones we care about)
+    // Get games that are linux compatible and not free
     const { data: games } = await supabase
       .from('games')
       .select('id, steam_app_id, name')
-      .eq('is_multiplayer', true)
       .eq('supports_linux', true)
       .eq('servers_deprecated', false)
       .eq('is_free', false)
@@ -56,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
           // ITAD uses Steam app IDs with a "app/" prefix
           const itadRes = await fetch(
-            `https://api.isthereanydeal.com/games/prices/v2?key=${ITAD_API_KEY}&country=AU&capacity=1`,
+            `https://api.isthereanydeal.com/games/prices/v2?key=${ITAD_API_KEY}&country=GB&capacity=1`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
