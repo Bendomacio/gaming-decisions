@@ -418,6 +418,39 @@ export function Admin() {
                 </div>
               </div>
 
+              {/* Min Player Count (per tab) */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-text-secondary">Minimum Current Players</label>
+                <p className="text-xs text-text-muted">Hide games with fewer active players than this (0 = show all)</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100000}
+                    value={config.tabs[settingsTab].minPlayerCount}
+                    onChange={e => setConfig(prev => ({
+                      ...prev,
+                      tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], minPlayerCount: Math.max(0, parseInt(e.target.value) || 0) } },
+                    }))}
+                    className="w-28 bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-border-accent transition-colors"
+                  />
+                  <div className="flex gap-1.5">
+                    {[0, 50, 100, 500, 1000].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setConfig(prev => ({
+                          ...prev,
+                          tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], minPlayerCount: n } },
+                        }))}
+                        className={`${toggleBtn} ${config.tabs[settingsTab].minPlayerCount === n ? toggleOn : toggleOff}`}
+                      >
+                        {n === 0 ? 'Off' : n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Default Sort Stack (per tab) */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-text-secondary">Default Sort Stack</label>

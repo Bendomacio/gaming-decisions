@@ -107,6 +107,7 @@ export interface FilterState {
   protonFilter: ProtonFilter
   releaseDateFilter: ReleaseDateFilter
   minReviewCount: number
+  minPlayerCount: number
 }
 
 export type SortOption =

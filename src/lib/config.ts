@@ -2,6 +2,7 @@ import type { ProtonFilter, ReleaseDateFilter, GameModeFilters, SortOption, AppT
 
 export interface TabDefaults {
   minReviewCount: number
+  minPlayerCount: number
   sortBy: SortOption[]
   gameModes: GameModeFilters
 }
@@ -26,21 +27,25 @@ export const DEFAULT_CONFIG: AppConfig = {
   tabs: {
     all: {
       minReviewCount: 150,
+      minPlayerCount: 0,
       sortBy: ['recommendation'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: false, localMultiplayer: false },
     },
     trending: {
       minReviewCount: 0,
+      minPlayerCount: 0,
       sortBy: ['current_players'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
     new: {
       minReviewCount: 0,
+      minPlayerCount: 0,
       sortBy: ['release_date'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },
     coming_soon: {
       minReviewCount: 0,
+      minPlayerCount: 0,
       sortBy: ['release_date'],
       gameModes: { multiplayer: true, coop: true, singlePlayer: true, localMultiplayer: true },
     },

@@ -90,6 +90,11 @@ export function applyFilters(
       if ((game.steam_review_count ?? 0) < filters.minReviewCount) return false
     }
 
+    // Minimum current player count filter
+    if (filters.minPlayerCount > 0 && !game.is_coming_soon) {
+      if ((game.current_players ?? 0) < filters.minPlayerCount) return false
+    }
+
     // Release date filter (applies on all tabs)
     if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
 

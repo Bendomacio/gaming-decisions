@@ -21,6 +21,7 @@ function buildDefaults(tab: AppTab = 'all'): FilterState {
     protonFilter: config.defaultProtonFilter,
     releaseDateFilter: config.defaultReleaseDateFilter,
     minReviewCount: tabDef.minReviewCount,
+    minPlayerCount: tabDef.minPlayerCount,
   }
 }
 
@@ -35,6 +36,7 @@ export function useFilters() {
         sortBy: [...tabDef.sortBy],
         gameModes: { ...tabDef.gameModes },
         minReviewCount: tabDef.minReviewCount,
+        minPlayerCount: tabDef.minPlayerCount,
       }
     })
   }, [])
