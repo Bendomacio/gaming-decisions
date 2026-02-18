@@ -18,7 +18,7 @@ function App() {
   const {
     filters, setSearch, setSortBy,
     toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly,
-    toggleTag, toggleGameMode, setProtonFilter,
+    toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
     setReleaseDateFilter, resetFilters, updateSelectedPlayers,
   } = useFilters()
 
@@ -92,6 +92,7 @@ function App() {
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
           onToggleTag={toggleTag}
+          onToggleExcludeTag={toggleExcludeTag}
           onToggleGameMode={toggleGameMode}
           onSetProtonFilter={setProtonFilter}
           onSetReleaseDateFilter={setReleaseDateFilter}

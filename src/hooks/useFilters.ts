@@ -7,6 +7,7 @@ const defaultFilters: FilterState = {
   freeOnly: false,
   onSaleOnly: false,
   genreTags: [],
+  excludeGenreTags: [],
   sortBy: 'recommendation',
   searchQuery: '',
   gameModes: {
@@ -16,7 +17,7 @@ const defaultFilters: FilterState = {
     localMultiplayer: false,
   },
   protonFilter: 'all',
-  releaseDateFilter: 'all',
+  releaseDateFilter: '5years',
 }
 
 export function useFilters() {
@@ -48,6 +49,19 @@ export function useFilters() {
       genreTags: prev.genreTags.includes(tag)
         ? prev.genreTags.filter(t => t !== tag)
         : [...prev.genreTags, tag],
+      // Remove from exclude if adding to include
+      excludeGenreTags: prev.excludeGenreTags.filter(t => t !== tag),
+    }))
+  }, [])
+
+  const toggleExcludeTag = useCallback((tag: string) => {
+    setFilters(prev => ({
+      ...prev,
+      excludeGenreTags: prev.excludeGenreTags.includes(tag)
+        ? prev.excludeGenreTags.filter(t => t !== tag)
+        : [...prev.excludeGenreTags, tag],
+      // Remove from include if adding to exclude
+      genreTags: prev.genreTags.filter(t => t !== tag),
     }))
   }, [])
 
@@ -82,6 +96,7 @@ export function useFilters() {
     toggleFreeOnly,
     toggleOnSaleOnly,
     toggleTag,
+    toggleExcludeTag,
     toggleGameMode,
     setProtonFilter,
     setReleaseDateFilter,

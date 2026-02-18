@@ -65,12 +65,13 @@ export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowPr
       </div>
 
       {/* Owners */}
-      <div className="flex-shrink-0 w-[80px] flex justify-center">
+      <div className="flex-shrink-0 w-[100px] flex justify-center">
         <OwnershipBadges
           players={players}
           owners={game.owners}
           selectedIds={selectedPlayerIds}
           compact
+          isFree={game.is_free}
         />
       </div>
 
@@ -188,6 +189,17 @@ export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowPr
             game.best_price_cents < (game.steam_price_cents ?? Infinity) ? 'text-success' : 'text-text-secondary'
           )}>
             {formatPriceGBP(game.best_price_cents)}
+          </span>
+        ) : (
+          <span className="text-[10px] text-text-muted">--</span>
+        )}
+      </div>
+
+      {/* Release Date */}
+      <div className="flex-shrink-0 w-[55px] text-center">
+        {game.release_date ? (
+          <span className="text-[10px] text-text-muted">
+            {new Date(game.release_date).getFullYear()}
           </span>
         ) : (
           <span className="text-[10px] text-text-muted">--</span>

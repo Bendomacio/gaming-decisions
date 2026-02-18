@@ -6,22 +6,28 @@ interface OwnershipBadgesProps {
   owners: PlayerGame[]
   selectedIds: string[]
   compact?: boolean
+  isFree?: boolean
 }
 
-export function OwnershipBadges({ players, owners, selectedIds, compact = false }: OwnershipBadgesProps) {
+export function OwnershipBadges({ players, owners, selectedIds, compact = false, isFree = false }: OwnershipBadgesProps) {
   const ownerPlayerIds = new Set(owners.map(o => o.player_id))
 
   return (
-    <div className={cn('flex', compact ? 'gap-1' : 'gap-1.5')}>
+    <div className={cn('flex items-center', compact ? 'gap-1' : 'gap-1.5')}>
+      {isFree && (
+        <span className="text-[8px] font-bold text-success bg-success/15 border border-success/30 rounded px-1 py-0.5 leading-none">
+          F2P
+        </span>
+      )}
       {players
         .filter(p => selectedIds.includes(p.id))
         .map(player => {
-          const owns = ownerPlayerIds.has(player.id)
+          const owns = isFree || ownerPlayerIds.has(player.id)
           const size = compact ? 'w-6 h-6' : 'w-7 h-7'
           return (
             <div
               key={player.id}
-              title={`${player.name}: ${owns ? 'Owns it' : 'Doesn\'t own it'}`}
+              title={`${player.name}: ${isFree ? 'Free to Play' : owns ? 'Owns it' : 'Doesn\'t own it'}`}
               className={cn(
                 'relative rounded-full flex items-center justify-center overflow-hidden',
                 size,
@@ -44,7 +50,6 @@ export function OwnershipBadges({ players, owners, selectedIds, compact = false 
                   {player.name[0]}
                 </div>
               )}
-              {/* Letter overlay */}
               <span className={cn(
                 'absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]',
                 !owns && 'text-white/60'

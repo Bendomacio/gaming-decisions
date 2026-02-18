@@ -1,4 +1,4 @@
-import { Search, X, Filter, Users, Monitor, Calendar } from 'lucide-react'
+import { Search, X, Filter, Users, Monitor, Calendar, Ban } from 'lucide-react'
 import { Button } from '../ui/Button'
 import type { FilterState, SortOption, GameModeFilters, ProtonFilter, ReleaseDateFilter, AppTab } from '../../types'
 import { cn } from '../../lib/utils'
@@ -15,6 +15,7 @@ interface GameFiltersProps {
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
   onToggleTag: (tag: string) => void
+  onToggleExcludeTag: (tag: string) => void
   onToggleGameMode: (mode: keyof GameModeFilters) => void
   onSetProtonFilter: (filter: ProtonFilter) => void
   onSetReleaseDateFilter: (filter: ReleaseDateFilter) => void
@@ -46,12 +47,12 @@ const protonOptions: { value: ProtonFilter; label: string }[] = [
 ]
 
 const releaseDateOptions: { value: ReleaseDateFilter; label: string }[] = [
-  { value: 'all', label: 'Any time' },
-  { value: 'week', label: 'Past Week' },
-  { value: 'month', label: 'Past Month' },
-  { value: '3months', label: 'Past 3 Months' },
-  { value: '6months', label: 'Past 6 Months' },
-  { value: 'year', label: 'Past Year' },
+  { value: 'all', label: 'Any' },
+  { value: 'year', label: '1yr' },
+  { value: '2years', label: '2yr' },
+  { value: '3years', label: '3yr' },
+  { value: '5years', label: '5yr' },
+  { value: '10years', label: '10yr' },
 ]
 
 export function GameFilters({
@@ -66,6 +67,7 @@ export function GameFilters({
   onToggleFreeOnly,
   onToggleOnSaleOnly,
   onToggleTag,
+  onToggleExcludeTag,
   onToggleGameMode,
   onSetProtonFilter,
   onSetReleaseDateFilter,
@@ -76,9 +78,10 @@ export function GameFilters({
     filters.freeOnly,
     filters.onSaleOnly,
     filters.genreTags.length > 0,
+    filters.excludeGenreTags.length > 0,
     filters.protonFilter !== 'all',
     !filters.gameModes.multiplayer || !filters.gameModes.coop || filters.gameModes.singlePlayer || filters.gameModes.localMultiplayer,
-    filters.releaseDateFilter !== 'all',
+    filters.releaseDateFilter !== '5years',
   ].filter(Boolean).length
 
   return (
@@ -124,7 +127,7 @@ export function GameFilters({
         )}
       </div>
 
-      {/* Row 2: Game Mode Filters + Proton */}
+      {/* Row 2: Game Modes + Proton + Release Date */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Users size={12} className="text-text-muted" />
@@ -164,31 +167,28 @@ export function GameFilters({
           ))}
         </div>
 
-        {activeTab === 'new' && (
-          <>
-            <div className="w-px h-5 bg-border" />
-            <div className="flex items-center gap-2">
-              <Calendar size={12} className="text-text-muted" />
-              {releaseDateOptions.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => onSetReleaseDateFilter(opt.value)}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
-                    filters.releaseDateFilter === opt.value
-                      ? 'bg-accent-dim text-accent-hover border-border-accent'
-                      : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        <div className="w-px h-5 bg-border" />
+
+        <div className="flex items-center gap-2">
+          <Calendar size={12} className="text-text-muted" />
+          {releaseDateOptions.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => onSetReleaseDateFilter(opt.value)}
+              className={cn(
+                'px-2.5 py-1 rounded-lg text-xs border transition-all cursor-pointer',
+                filters.releaseDateFilter === opt.value
+                  ? 'bg-accent-dim text-accent-hover border-border-accent'
+                  : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Row 3: Quick Filters + Genre Tags */}
+      {/* Row 3: Quick Filters + Genre Tags (include/exclude) */}
       <div className="flex items-center gap-2 flex-wrap">
         <Filter size={12} className="text-text-muted" />
 
@@ -230,20 +230,29 @@ export function GameFilters({
 
         <div className="w-px h-4 bg-border" />
 
-        {availableTags.slice(0, 8).map(tag => (
-          <button
-            key={tag}
-            onClick={() => onToggleTag(tag)}
-            className={cn(
-              'px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer',
-              filters.genreTags.includes(tag)
-                ? 'bg-accent-dim text-accent-hover border-border-accent'
-                : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
-            )}
-          >
-            {tag}
-          </button>
-        ))}
+        {availableTags.slice(0, 10).map(tag => {
+          const isIncluded = filters.genreTags.includes(tag)
+          const isExcluded = filters.excludeGenreTags.includes(tag)
+          return (
+            <button
+              key={tag}
+              onClick={() => onToggleTag(tag)}
+              onContextMenu={e => { e.preventDefault(); onToggleExcludeTag(tag) }}
+              title="Click to include, right-click to exclude"
+              className={cn(
+                'px-2.5 py-1 rounded-lg text-[11px] border transition-all cursor-pointer flex items-center gap-1',
+                isIncluded
+                  ? 'bg-accent-dim text-accent-hover border-border-accent'
+                  : isExcluded
+                  ? 'bg-error/15 text-error border-error/30 line-through'
+                  : 'bg-bg-card text-text-muted border-border hover:border-border-hover'
+              )}
+            >
+              {isExcluded && <Ban size={9} />}
+              {tag}
+            </button>
+          )
+        })}
 
         {activeFilterCount > 0 && (
           <Button variant="ghost" size="sm" onClick={onReset}>

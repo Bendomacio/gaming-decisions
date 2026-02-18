@@ -12,14 +12,12 @@ function matchesGameModes(categories: string[], filters: FilterState['gameModes'
   const hasSP = categories.some(c => SINGLE_PLAYER_CATS.includes(c))
   const hasLocal = categories.some(c => LOCAL_MP_CATS.includes(c))
 
-  // Game must match at least one enabled mode
   const enabledModes: boolean[] = []
   if (filters.multiplayer) enabledModes.push(hasMP)
   if (filters.coop) enabledModes.push(hasCoop)
   if (filters.singlePlayer) enabledModes.push(hasSP)
   if (filters.localMultiplayer) enabledModes.push(hasLocal)
 
-  // If no modes enabled, show all
   if (enabledModes.length === 0) return true
   return enabledModes.some(Boolean)
 }
@@ -49,6 +47,10 @@ function matchesReleaseDate(releaseDate: string | null, filter: FilterState['rel
     case '3months': return diffDays <= 90
     case '6months': return diffDays <= 180
     case 'year': return diffDays <= 365
+    case '2years': return diffDays <= 730
+    case '3years': return diffDays <= 1095
+    case '5years': return diffDays <= 1825
+    case '10years': return diffDays <= 3650
     default: return true
   }
 }
@@ -59,7 +61,6 @@ export function applyFilters(
   tab: AppTab = 'all'
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
-    // Don't hard-filter by multiplayer/linux anymore - let game mode filters handle it
     if (!game.supports_linux) return false
     if (game.servers_deprecated) return false
 
@@ -69,23 +70,32 @@ export function applyFilters(
     // Proton filter
     if (!matchesProtonFilter(game.protondb_rating, filters.protonFilter)) return false
 
+    // Release date filter (applies on all tabs)
+    if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
+
     // Tab-specific filters
-    if (tab === 'new') {
-      if (!matchesReleaseDate(game.release_date, filters.releaseDateFilter)) return false
-    }
     if (tab === 'trending') {
       if (!game.trending_score || game.trending_score <= 0) return false
     }
 
+    // Treat free games as owned by all for filtering purposes
+    const effectiveAllOwn = game.is_free || game.all_selected_own
+
     // User filters
-    if (filters.ownedByAll && !game.all_selected_own) return false
+    if (filters.ownedByAll && !effectiveAllOwn) return false
     if (filters.freeOnly && !game.is_free) return false
     if (filters.onSaleOnly && !game.is_on_sale && !game.is_free) return false
 
-    // Genre tag filter
+    // Include genre tag filter
     if (filters.genreTags.length > 0) {
       const gameTags = [...game.steam_tags, ...game.categories].map(t => t.toLowerCase())
       if (!filters.genreTags.some(tag => gameTags.includes(tag.toLowerCase()))) return false
+    }
+
+    // Exclude genre tag filter
+    if (filters.excludeGenreTags.length > 0) {
+      const gameTags = [...game.steam_tags, ...game.categories].map(t => t.toLowerCase())
+      if (filters.excludeGenreTags.some(tag => gameTags.includes(tag.toLowerCase()))) return false
     }
 
     // Search query
