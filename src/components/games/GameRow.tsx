@@ -139,7 +139,7 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
       </div>
 
       {/* Multiplayer Modes */}
-      <div className="flex-shrink-0 w-[80px] flex flex-col items-center gap-0.5">
+      <div className="flex-shrink-0 w-[70px] flex justify-center">
         {modes.length > 0 ? (
           <div className="flex flex-wrap gap-0.5 justify-center">
             {modes.map(mode => (
@@ -151,10 +151,19 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
         ) : (
           <span className="text-[10px] text-text-muted">--</span>
         )}
-        {game.max_players !== null && game.max_players < 999 && (
-          <span className="text-[8px] text-text-muted">
-            max {game.max_players}p
+      </div>
+
+      {/* Max Players */}
+      <div className="flex-shrink-0 w-[35px] text-center">
+        {game.max_players !== null ? (
+          <span className={cn(
+            'text-[10px] font-medium',
+            game.max_players >= 999 ? 'text-text-muted' : 'text-text-secondary'
+          )}>
+            {game.max_players >= 999 ? 'MMO' : game.max_players}
           </span>
+        ) : (
+          <span className="text-[10px] text-text-muted">--</span>
         )}
       </div>
 
