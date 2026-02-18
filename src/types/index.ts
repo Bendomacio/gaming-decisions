@@ -108,6 +108,7 @@ export interface FilterState {
   releaseDateFilter: ReleaseDateFilter
   minReviewCount: number
   minPlayerCount: number
+  hideUnplayedFree: boolean
 }
 
 export type SortOption =

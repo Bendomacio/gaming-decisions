@@ -34,20 +34,21 @@ export function Header({ lastSync, onRefresh, syncing, theme, onThemeChange }: H
   }, [showThemes])
 
   return (
-    <header className="glass sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-accent-dim flex items-center justify-center">
-          <Gamepad2 size={22} className="text-accent" />
+    <header className="glass sticky top-0 z-50 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-accent-dim flex items-center justify-center">
+          <Gamepad2 size={18} className="text-accent sm:hidden" />
+          <Gamepad2 size={22} className="text-accent hidden sm:block" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-text-primary leading-tight">Gaming Decisions</h1>
-          <p className="text-xs text-text-muted">What are we playing tonight?</p>
+          <h1 className="text-base sm:text-lg font-bold text-text-primary leading-tight">Gaming Decisions</h1>
+          <p className="text-[10px] sm:text-xs text-text-muted hidden sm:block">What are we playing tonight?</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {syncTime && (
-          <div className="flex items-center gap-1.5 text-xs text-text-muted">
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-text-muted">
             <Clock size={12} />
             <span>Last sync: {syncTime}</span>
           </div>
@@ -58,7 +59,7 @@ export function Header({ lastSync, onRefresh, syncing, theme, onThemeChange }: H
           <button
             onClick={() => setShowThemes(!showThemes)}
             className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer border',
+              'flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer border',
               showThemes
                 ? 'bg-accent-dim text-accent-hover border-border-accent'
                 : 'text-text-muted border-border hover:text-text-secondary hover:border-border-hover'
@@ -108,7 +109,7 @@ export function Header({ lastSync, onRefresh, syncing, theme, onThemeChange }: H
           disabled={syncing}
         >
           <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
-          Refresh
+          <span className="hidden sm:inline">Refresh</span>
         </Button>
       </div>
     </header>

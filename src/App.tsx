@@ -20,7 +20,7 @@ function App() {
   const { games, loading: gamesLoading, refetch } = useGames(players, selectedPlayerIds)
   const {
     filters, setSearch, toggleSortBy,
-    toggleOwnedByAll, toggleOwnedByNone, toggleFreeOnly, toggleOnSaleOnly, toggleLinuxOnly,
+    toggleOwnedByAll, toggleOwnedByNone, toggleFreeOnly, toggleOnSaleOnly, toggleLinuxOnly, toggleHideUnplayedFree,
     toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
     setReleaseDateFilter, resetFilters, updateSelectedPlayers, applyTabDefaults,
   } = useFilters()
@@ -83,7 +83,7 @@ function App() {
     <div className="min-h-screen bg-bg-primary">
       <Header lastSync={lastSync} onRefresh={handleRefresh} syncing={syncing} theme={theme} onThemeChange={setTheme} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-4">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-3 sm:py-5 space-y-3 sm:space-y-4">
         {/* Player selector */}
         <PlayerSelector
           players={players}
@@ -112,6 +112,7 @@ function App() {
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
           onToggleLinuxOnly={toggleLinuxOnly}
+          onToggleHideUnplayedFree={toggleHideUnplayedFree}
           onToggleTag={toggleTag}
           onToggleExcludeTag={toggleExcludeTag}
           onToggleGameMode={toggleGameMode}

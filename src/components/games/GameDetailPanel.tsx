@@ -32,16 +32,16 @@ export function GameDetailPanel({ game, players, selectedPlayerIds, onClose }: G
           />
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-black/50 flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
+            className="absolute top-3 right-3 w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-black/50 flex items-center justify-center hover:bg-black/70 transition-colors cursor-pointer"
           >
             <X size={16} className="text-white" />
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-3 sm:p-5 space-y-4 sm:space-y-5">
           {/* Title + Store link */}
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="text-xl font-bold text-text-primary">{game.name}</h2>
+          <div className="flex items-start justify-between gap-2 sm:gap-3">
+            <h2 className="text-lg sm:text-xl font-bold text-text-primary">{game.name}</h2>
             <a
               href={getSteamStoreUrl(game.steam_app_id)}
               target="_blank"

@@ -75,7 +75,7 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
     if (isExcluded) return
-    setMenuPos({ x: e.clientX, y: e.clientY })
+    setMenuPos({ x: Math.min(e.clientX, window.innerWidth - 250), y: e.clientY })
     setExcludeReason('')
     setExcludeBy('')
     setShowExcludeMenu(true)
@@ -88,11 +88,112 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
 
   return (
     <>
+    {/* Mobile layout */}
     <div
       onClick={onClick}
       onContextMenu={handleContextMenu}
       className={cn(
-        "group relative flex items-center gap-3 px-3 py-2 border rounded-lg transition-all cursor-pointer",
+        "md:hidden group relative flex items-center gap-2 px-2.5 py-2 border rounded-lg transition-all cursor-pointer",
+        isExcluded
+          ? "bg-bg-card/50 border-error/20 opacity-60"
+          : "bg-bg-card border-border hover:bg-bg-card-hover hover:border-border-hover"
+      )}
+    >
+      {/* Star */}
+      <div className="shrink-0">
+        <ShortlistStar
+          gameId={game.id}
+          isShortlisted={isShortlisted}
+          entry={shortlistEntry}
+          players={players}
+          onToggle={onShortlistToggle}
+          onTogglePlayer={onShortlistTogglePlayer}
+          onSetReason={onShortlistSetReason}
+        />
+      </div>
+
+      {/* Thumbnail */}
+      <div className="relative w-[60px] h-[28px] shrink-0 rounded overflow-hidden">
+        <img
+          src={game.header_image_url || getSteamHeaderImage(game.steam_app_id)}
+          alt={game.name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      {/* Name + tags */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-xs font-semibold text-text-primary truncate">{game.name}</h3>
+        <div className="flex items-center gap-1 mt-0.5">
+          {game.steam_review_score !== null && (
+            <div className="flex items-center gap-0.5">
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: getReviewColor(game.steam_review_score) }}
+              />
+              <span className="text-[9px] text-text-muted">{game.steam_review_score}%</span>
+            </div>
+          )}
+          {modes.length > 0 && (
+            <span className="text-[9px] text-text-muted">{modes.slice(0, 2).join('/')}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Owners */}
+      <div className="shrink-0">
+        <OwnershipBadges
+          players={players}
+          owners={game.owners}
+          selectedIds={selectedPlayerIds}
+          compact
+          isFree={game.is_free}
+        />
+      </div>
+
+      {/* Price */}
+      <div className="shrink-0 w-[45px] text-center">
+        {game.is_free ? (
+          <span className="text-[10px] font-semibold text-success">Free</span>
+        ) : (
+          <span className={cn(
+            'text-[10px] font-medium',
+            game.is_on_sale ? 'text-warning' : 'text-text-secondary'
+          )}>
+            {formatPriceGBP(game.steam_price_cents)}
+          </span>
+        )}
+      </div>
+
+      {/* Steam link / Restore */}
+      {isExcluded ? (
+        <button
+          onClick={e => { e.stopPropagation(); onRestore(game.id) }}
+          className="shrink-0 w-6 h-6 rounded-md bg-success/20 flex items-center justify-center cursor-pointer"
+          title="Restore game"
+        >
+          <Undo2 size={10} className="text-success" />
+        </button>
+      ) : (
+        <a
+          href={getSteamStoreUrl(game.steam_app_id)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={e => e.stopPropagation()}
+          className="shrink-0 w-6 h-6 rounded-md bg-steam/60 flex items-center justify-center"
+        >
+          <ExternalLink size={10} className="text-steam-blue" />
+        </a>
+      )}
+    </div>
+
+    {/* Desktop layout */}
+    <div
+      onClick={onClick}
+      onContextMenu={handleContextMenu}
+      className={cn(
+        "hidden md:flex group relative items-center gap-3 px-3 py-2 border rounded-lg transition-all cursor-pointer",
         isExcluded
           ? "bg-bg-card/50 border-error/20 opacity-60"
           : "bg-bg-card border-border hover:bg-bg-card-hover hover:border-border-hover"
@@ -188,7 +289,7 @@ export function GameRow({ game, players, selectedPlayerIds, isShortlisted, short
         )}
       </div>
 
-      {/* Steam Rating - linked to reviews */}
+      {/* Steam Rating */}
       <div className="flex-shrink-0 w-[130px]">
         {game.steam_review_score !== null ? (
           <a

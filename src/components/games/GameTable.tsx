@@ -30,22 +30,23 @@ interface ColumnHeader {
   sortKey?: SortOption
   width: string
   align?: 'left' | 'center'
+  hideOnMobile?: boolean
 }
 
 const columns: ColumnHeader[] = [
   { label: '', width: 'w-7' },                                // shortlist star
-  { label: '', width: 'w-[120px]' },                          // thumbnail
+  { label: '', width: 'w-[120px]', hideOnMobile: true },      // thumbnail (hidden on mobile, shown inline in row)
   { label: 'Game', sortKey: 'name', width: 'flex-1', align: 'left' },
   { label: 'Owners', width: 'w-[100px]', align: 'center' },
-  { label: 'Modes', width: 'w-[70px]', align: 'center' },
-  { label: 'Max', width: 'w-[35px]', align: 'center' },
-  { label: 'Playing', sortKey: 'current_players', width: 'w-[55px]', align: 'center' },
-  { label: 'Steam Reviews', sortKey: 'review_score', width: 'w-[130px]', align: 'left' },
-  { label: 'Linux', width: 'w-[70px]', align: 'center' },
-  { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center' },
+  { label: 'Modes', width: 'w-[70px]', align: 'center', hideOnMobile: true },
+  { label: 'Max', width: 'w-[35px]', align: 'center', hideOnMobile: true },
+  { label: 'Playing', sortKey: 'current_players', width: 'w-[55px]', align: 'center', hideOnMobile: true },
+  { label: 'Steam Reviews', sortKey: 'review_score', width: 'w-[130px]', align: 'left', hideOnMobile: true },
+  { label: 'Linux', width: 'w-[70px]', align: 'center', hideOnMobile: true },
+  { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center', hideOnMobile: true },
   { label: 'Steam £', sortKey: 'price_asc', width: 'w-[60px]', align: 'center' },
-  { label: 'Key £', width: 'w-[60px]', align: 'center' },
-  { label: 'Released', sortKey: 'release_date', width: 'w-[65px]', align: 'center' },
+  { label: 'Key £', width: 'w-[60px]', align: 'center', hideOnMobile: true },
+  { label: 'Released', sortKey: 'release_date', width: 'w-[65px]', align: 'center', hideOnMobile: true },
   { label: '', width: 'w-6' },                                // steam link
 ]
 
@@ -70,8 +71,8 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
 
   return (
     <div className="space-y-1">
-      {/* Column headers */}
-      <div className="flex items-center gap-3 px-3 py-1.5">
+      {/* Column headers - hidden on mobile */}
+      <div className="hidden md:flex items-center gap-3 px-3 py-1.5">
         {columns.map((col, i) => {
           const sortIdx = col.sortKey ? sortBy.indexOf(col.sortKey) : -1
           const isActive = sortIdx !== -1
@@ -82,6 +83,7 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
                 col.width,
                 'flex-shrink-0',
                 col.label === 'Game' && 'flex-1 min-w-0',
+                col.hideOnMobile && 'hidden md:block',
               )}
             >
               {col.sortKey ? (

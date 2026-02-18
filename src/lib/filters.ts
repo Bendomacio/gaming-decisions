@@ -122,6 +122,15 @@ export function applyFilters(
     if (filters.freeOnly && !game.is_free) return false
     if (filters.onSaleOnly && !game.is_on_sale && !game.is_free) return false
 
+    // Hide unplayed free games: hide free games where no selected player has playtime
+    if (filters.hideUnplayedFree && game.is_free) {
+      const selectedOwners = game.owners.filter(o =>
+        filters.selectedPlayers.includes(o.player_id)
+      )
+      const hasPlaytime = selectedOwners.some(o => o.playtime_hours > 0)
+      if (!hasPlaytime) return false
+    }
+
     // Include genre tag filter
     if (filters.genreTags.length > 0) {
       const gameTags = [...game.steam_tags, ...game.categories].map(t => t.toLowerCase())

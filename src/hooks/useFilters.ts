@@ -22,6 +22,7 @@ function buildDefaults(tab: AppTab = 'all'): FilterState {
     releaseDateFilter: config.defaultReleaseDateFilter,
     minReviewCount: tabDef.minReviewCount,
     minPlayerCount: tabDef.minPlayerCount,
+    hideUnplayedFree: false,
   }
 }
 
@@ -83,6 +84,10 @@ export function useFilters() {
     setFilters(prev => ({ ...prev, linuxOnly: !prev.linuxOnly }))
   }, [])
 
+  const toggleHideUnplayedFree = useCallback(() => {
+    setFilters(prev => ({ ...prev, hideUnplayedFree: !prev.hideUnplayedFree }))
+  }, [])
+
   const toggleTag = useCallback((tag: string) => {
     setFilters(prev => ({
       ...prev,
@@ -136,6 +141,7 @@ export function useFilters() {
     toggleOnSaleOnly,
     toggleShortlistedOnly,
     toggleLinuxOnly,
+    toggleHideUnplayedFree,
     toggleTag,
     toggleExcludeTag,
     toggleGameMode,
