@@ -1,4 +1,4 @@
-import type { GameWithOwnership, FilterState, AppTab } from '../types'
+import type { GameWithOwnership, FilterState, AppTab, SortOption } from '../types'
 import { calculateRecommendationScore } from './api'
 
 const MULTIPLAYER_CATS = ['Multi-player', 'Online Multi-Player']
@@ -107,13 +107,13 @@ export function applyFilters(
     return true
   })
 
-  // Sort
+  // Sort - supports multiple sort keys in priority order
   const selectedCount = filters.selectedPlayers.length
-  const sortBy = tab === 'trending' ? 'trending' as const :
-                 tab === 'new' ? 'release_date' as const :
-                 filters.sortBy
+  const sortKeys = tab === 'trending' ? ['trending' as const] :
+                   tab === 'new' ? ['release_date' as const] :
+                   filters.sortBy
 
-  filtered.sort((a, b) => {
+  function compareBySortKey(a: GameWithOwnership, b: GameWithOwnership, sortBy: SortOption): number {
     switch (sortBy) {
       case 'recommendation':
         return calculateRecommendationScore(b, selectedCount) - calculateRecommendationScore(a, selectedCount)
@@ -148,6 +148,14 @@ export function applyFilters(
       default:
         return 0
     }
+  }
+
+  filtered.sort((a, b) => {
+    for (const key of sortKeys) {
+      const result = compareBySortKey(a, b, key)
+      if (result !== 0) return result
+    }
+    return 0
   })
 
   return filtered

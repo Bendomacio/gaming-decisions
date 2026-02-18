@@ -16,7 +16,7 @@ function App() {
   const { players, selectedPlayerIds, togglePlayer, loading: playersLoading } = usePlayers()
   const { games, loading: gamesLoading, refetch } = useGames(players, selectedPlayerIds)
   const {
-    filters, setSearch, setSortBy,
+    filters, setSearch, toggleSortBy,
     toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly,
     toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
     setReleaseDateFilter, resetFilters, updateSelectedPlayers,
@@ -87,7 +87,7 @@ function App() {
           availableTags={availableTags}
           activeTab={activeTab}
           onSearch={setSearch}
-          onSortBy={setSortBy}
+          onToggleSortBy={toggleSortBy}
           onToggleOwnedByAll={toggleOwnedByAll}
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
@@ -106,7 +106,7 @@ function App() {
           selectedPlayerIds={selectedPlayerIds}
           loading={loading}
           sortBy={filters.sortBy}
-          onSortBy={setSortBy}
+          onToggleSortBy={toggleSortBy}
           onGameClick={setSelectedGame}
         />
       </main>

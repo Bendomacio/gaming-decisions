@@ -10,7 +10,7 @@ interface GameFiltersProps {
   availableTags: string[]
   activeTab: AppTab
   onSearch: (query: string) => void
-  onSortBy: (sort: SortOption) => void
+  onToggleSortBy: (sort: SortOption) => void
   onToggleOwnedByAll: () => void
   onToggleFreeOnly: () => void
   onToggleOnSaleOnly: () => void
@@ -62,7 +62,7 @@ export function GameFilters({
   availableTags,
   activeTab,
   onSearch,
-  onSortBy,
+  onToggleSortBy,
   onToggleOwnedByAll,
   onToggleFreeOnly,
   onToggleOnSaleOnly,
@@ -109,20 +109,29 @@ export function GameFilters({
 
         {activeTab === 'all' && (
           <div className="flex items-center gap-1 bg-bg-input border border-border rounded-lg p-1">
-            {sortOptions.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => onSortBy(opt.value)}
-                className={cn(
-                  'px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer whitespace-nowrap',
-                  filters.sortBy === opt.value
-                    ? 'bg-accent text-white'
-                    : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
+            {sortOptions.map(opt => {
+              const idx = filters.sortBy.indexOf(opt.value)
+              const isActive = idx !== -1
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => onToggleSortBy(opt.value)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-md text-xs transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1',
+                    isActive
+                      ? 'bg-accent text-white'
+                      : 'text-text-muted hover:text-text-secondary hover:bg-white/5'
+                  )}
+                >
+                  {opt.label}
+                  {isActive && filters.sortBy.length > 1 && (
+                    <span className="text-[9px] bg-white/20 rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                      {idx + 1}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>

@@ -9,8 +9,8 @@ interface GameTableProps {
   players: Player[]
   selectedPlayerIds: string[]
   loading: boolean
-  sortBy: SortOption
-  onSortBy: (sort: SortOption) => void
+  sortBy: SortOption[]
+  onToggleSortBy: (sort: SortOption) => void
   onGameClick: (game: GameWithOwnership) => void
 }
 
@@ -32,11 +32,11 @@ const columns: ColumnHeader[] = [
   { label: 'Played', sortKey: 'playtime', width: 'w-[50px]', align: 'center' },
   { label: 'Steam £', sortKey: 'price_asc', width: 'w-[60px]', align: 'center' },
   { label: 'Key £', width: 'w-[60px]', align: 'center' },
-  { label: 'Released', sortKey: 'release_date', width: 'w-[55px]', align: 'center' },
+  { label: 'Released', sortKey: 'release_date', width: 'w-[65px]', align: 'center' },
   { label: '', width: 'w-6' },                                // steam link
 ]
 
-export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, onSortBy, onGameClick }: GameTableProps) {
+export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, onToggleSortBy, onGameClick }: GameTableProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -59,37 +59,46 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
     <div className="space-y-1">
       {/* Column headers */}
       <div className="flex items-center gap-3 px-3 py-1.5">
-        {columns.map((col, i) => (
-          <div
-            key={i}
-            className={cn(
-              col.width,
-              'flex-shrink-0',
-              col.label === 'Game' && 'flex-1 min-w-0',
-            )}
-          >
-            {col.sortKey ? (
-              <button
-                onClick={() => onSortBy(col.sortKey!)}
-                className={cn(
-                  'flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold transition-colors cursor-pointer',
-                  col.align === 'center' && 'justify-center w-full',
-                  sortBy === col.sortKey ? 'text-accent' : 'text-text-muted hover:text-text-secondary'
-                )}
-              >
-                {col.label}
-                <ArrowUpDown size={8} />
-              </button>
-            ) : col.label ? (
-              <span className={cn(
-                'text-[10px] uppercase tracking-wider font-semibold text-text-muted',
-                col.align === 'center' && 'block text-center'
-              )}>
-                {col.label}
-              </span>
-            ) : null}
-          </div>
-        ))}
+        {columns.map((col, i) => {
+          const sortIdx = col.sortKey ? sortBy.indexOf(col.sortKey) : -1
+          const isActive = sortIdx !== -1
+          return (
+            <div
+              key={i}
+              className={cn(
+                col.width,
+                'flex-shrink-0',
+                col.label === 'Game' && 'flex-1 min-w-0',
+              )}
+            >
+              {col.sortKey ? (
+                <button
+                  onClick={() => onToggleSortBy(col.sortKey!)}
+                  className={cn(
+                    'flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold transition-colors cursor-pointer',
+                    col.align === 'center' && 'justify-center w-full',
+                    isActive ? 'text-accent' : 'text-text-muted hover:text-text-secondary'
+                  )}
+                >
+                  {col.label}
+                  <ArrowUpDown size={8} />
+                  {isActive && sortBy.length > 1 && (
+                    <span className="text-[8px] bg-accent/30 rounded-full w-3 h-3 flex items-center justify-center">
+                      {sortIdx + 1}
+                    </span>
+                  )}
+                </button>
+              ) : col.label ? (
+                <span className={cn(
+                  'text-[10px] uppercase tracking-wider font-semibold text-text-muted',
+                  col.align === 'center' && 'block text-center'
+                )}>
+                  {col.label}
+                </span>
+              ) : null}
+            </div>
+          )
+        })}
       </div>
 
       {/* Game rows */}

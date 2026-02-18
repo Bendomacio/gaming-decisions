@@ -96,7 +96,7 @@ export interface FilterState {
   onSaleOnly: boolean
   genreTags: string[]
   excludeGenreTags: string[]
-  sortBy: SortOption
+  sortBy: SortOption[]
   searchQuery: string
   gameModes: GameModeFilters
   protonFilter: ProtonFilter

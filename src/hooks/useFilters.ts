@@ -8,7 +8,7 @@ const defaultFilters: FilterState = {
   onSaleOnly: false,
   genreTags: [],
   excludeGenreTags: [],
-  sortBy: 'recommendation',
+  sortBy: ['recommendation'],
   searchQuery: '',
   gameModes: {
     multiplayer: true,
@@ -27,8 +27,17 @@ export function useFilters() {
     setFilters(prev => ({ ...prev, searchQuery: query }))
   }, [])
 
-  const setSortBy = useCallback((sortBy: SortOption) => {
-    setFilters(prev => ({ ...prev, sortBy }))
+  const toggleSortBy = useCallback((sort: SortOption) => {
+    setFilters(prev => {
+      const current = prev.sortBy
+      if (current.includes(sort)) {
+        // Remove it - but keep at least one
+        const next = current.filter(s => s !== sort)
+        return { ...prev, sortBy: next.length > 0 ? next : ['recommendation'] }
+      }
+      // Add to end of chain
+      return { ...prev, sortBy: [...current, sort] }
+    })
   }, [])
 
   const toggleOwnedByAll = useCallback(() => {
@@ -91,7 +100,7 @@ export function useFilters() {
   return {
     filters,
     setSearch,
-    setSortBy,
+    toggleSortBy,
     toggleOwnedByAll,
     toggleFreeOnly,
     toggleOnSaleOnly,

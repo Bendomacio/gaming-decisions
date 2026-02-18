@@ -196,10 +196,10 @@ export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowPr
       </div>
 
       {/* Release Date */}
-      <div className="flex-shrink-0 w-[55px] text-center">
+      <div className="flex-shrink-0 w-[65px] text-center">
         {game.release_date ? (
           <span className="text-[10px] text-text-muted">
-            {new Date(game.release_date).getFullYear()}
+            {new Date(game.release_date).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
           </span>
         ) : (
           <span className="text-[10px] text-text-muted">--</span>
