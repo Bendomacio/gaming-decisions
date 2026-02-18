@@ -3,6 +3,7 @@ import { GameRow } from './GameRow'
 import { Spinner } from '../ui/Spinner'
 import { cn } from '../../lib/utils'
 import type { GameWithOwnership, Player, SortOption } from '../../types'
+import type { ShortlistEntry } from '../../hooks/useShortlist'
 
 interface GameTableProps {
   games: GameWithOwnership[]
@@ -10,8 +11,13 @@ interface GameTableProps {
   selectedPlayerIds: string[]
   loading: boolean
   sortBy: SortOption[]
+  shortlistedIds: Set<string>
+  getShortlistEntry: (gameId: string) => ShortlistEntry | null
   onToggleSortBy: (sort: SortOption) => void
   onGameClick: (game: GameWithOwnership) => void
+  onShortlistToggle: (gameId: string) => void
+  onShortlistTogglePlayer: (gameId: string, playerName: string) => void
+  onShortlistSetReason: (gameId: string, reason: string) => void
 }
 
 interface ColumnHeader {
@@ -22,6 +28,7 @@ interface ColumnHeader {
 }
 
 const columns: ColumnHeader[] = [
+  { label: '', width: 'w-7' },                                // shortlist star
   { label: '', width: 'w-[120px]' },                          // thumbnail
   { label: 'Game', sortKey: 'name', width: 'flex-1', align: 'left' },
   { label: 'Owners', width: 'w-[100px]', align: 'center' },
@@ -36,7 +43,7 @@ const columns: ColumnHeader[] = [
   { label: '', width: 'w-6' },                                // steam link
 ]
 
-export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, onToggleSortBy, onGameClick }: GameTableProps) {
+export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, shortlistedIds, getShortlistEntry, onToggleSortBy, onGameClick, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason }: GameTableProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -109,6 +116,11 @@ export function GameTable({ games, players, selectedPlayerIds, loading, sortBy, 
             game={game}
             players={players}
             selectedPlayerIds={selectedPlayerIds}
+            isShortlisted={shortlistedIds.has(game.id)}
+            shortlistEntry={getShortlistEntry(game.id)}
+            onShortlistToggle={onShortlistToggle}
+            onShortlistTogglePlayer={onShortlistTogglePlayer}
+            onShortlistSetReason={onShortlistSetReason}
             onClick={() => onGameClick(game)}
           />
         ))}

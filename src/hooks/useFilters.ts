@@ -6,6 +6,7 @@ const defaultFilters: FilterState = {
   ownedByAll: false,
   freeOnly: false,
   onSaleOnly: false,
+  shortlistedOnly: false,
   genreTags: [],
   excludeGenreTags: ['Massively Multiplayer'],
   sortBy: ['recommendation'],
@@ -54,6 +55,10 @@ export function useFilters() {
 
   const toggleOnSaleOnly = useCallback(() => {
     setFilters(prev => ({ ...prev, onSaleOnly: !prev.onSaleOnly }))
+  }, [])
+
+  const toggleShortlistedOnly = useCallback(() => {
+    setFilters(prev => ({ ...prev, shortlistedOnly: !prev.shortlistedOnly }))
   }, [])
 
   const toggleTag = useCallback((tag: string) => {
@@ -108,6 +113,7 @@ export function useFilters() {
     toggleOwnedByAll,
     toggleFreeOnly,
     toggleOnSaleOnly,
+    toggleShortlistedOnly,
     toggleTag,
     toggleExcludeTag,
     toggleGameMode,

@@ -8,6 +8,7 @@ import { GameDetailPanel } from './components/games/GameDetailPanel'
 import { usePlayers } from './hooks/usePlayers'
 import { useGames } from './hooks/useGames'
 import { useFilters } from './hooks/useFilters'
+import { useShortlist } from './hooks/useShortlist'
 import { fetchLatestSync } from './lib/api'
 import { applyFilters, getAvailableTags } from './lib/filters'
 import type { GameWithOwnership, SyncLog, AppTab } from './types'
@@ -17,10 +18,14 @@ function App() {
   const { games, loading: gamesLoading, refetch } = useGames(players, selectedPlayerIds)
   const {
     filters, setSearch, toggleSortBy,
-    toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly,
+    toggleOwnedByAll, toggleFreeOnly, toggleOnSaleOnly, toggleShortlistedOnly,
     toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
     setReleaseDateFilter, resetFilters, updateSelectedPlayers,
   } = useFilters()
+  const {
+    shortlistedIds, getEntry, toggleShortlist,
+    togglePlayer: toggleShortlistPlayer, setReason,
+  } = useShortlist()
 
   const [activeTab, setActiveTab] = useState<AppTab>('all')
   const [selectedGame, setSelectedGame] = useState<GameWithOwnership | null>(null)
@@ -50,13 +55,13 @@ function App() {
 
   // Apply filters per tab
   const filtersWithPlayers = { ...filters, selectedPlayers: selectedPlayerIds }
-  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab)
+  const filteredGames = applyFilters(games, filtersWithPlayers, activeTab, shortlistedIds)
   const availableTags = getAvailableTags(games)
 
   // Tab counts
-  const allCount = applyFilters(games, filtersWithPlayers, 'all').length
-  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending').length
-  const newCount = applyFilters(games, filtersWithPlayers, 'new').length
+  const allCount = applyFilters(games, filtersWithPlayers, 'all', shortlistedIds).length
+  const trendingCount = applyFilters(games, filtersWithPlayers, 'trending', shortlistedIds).length
+  const newCount = applyFilters(games, filtersWithPlayers, 'new', shortlistedIds).length
 
   const loading = playersLoading || gamesLoading
 
@@ -91,6 +96,7 @@ function App() {
           onToggleOwnedByAll={toggleOwnedByAll}
           onToggleFreeOnly={toggleFreeOnly}
           onToggleOnSaleOnly={toggleOnSaleOnly}
+          onToggleShortlistedOnly={toggleShortlistedOnly}
           onToggleTag={toggleTag}
           onToggleExcludeTag={toggleExcludeTag}
           onToggleGameMode={toggleGameMode}
@@ -106,8 +112,13 @@ function App() {
           selectedPlayerIds={selectedPlayerIds}
           loading={loading}
           sortBy={filters.sortBy}
+          shortlistedIds={shortlistedIds}
+          getShortlistEntry={getEntry}
           onToggleSortBy={toggleSortBy}
           onGameClick={setSelectedGame}
+          onShortlistToggle={toggleShortlist}
+          onShortlistTogglePlayer={toggleShortlistPlayer}
+          onShortlistSetReason={setReason}
         />
       </main>
 

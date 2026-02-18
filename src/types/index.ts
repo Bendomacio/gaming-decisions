@@ -94,6 +94,7 @@ export interface FilterState {
   ownedByAll: boolean
   freeOnly: boolean
   onSaleOnly: boolean
+  shortlistedOnly: boolean
   genreTags: string[]
   excludeGenreTags: string[]
   sortBy: SortOption[]

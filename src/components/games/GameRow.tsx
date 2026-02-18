@@ -1,5 +1,6 @@
 import { ExternalLink, Clock } from 'lucide-react'
 import { OwnershipBadges } from '../players/OwnershipBadges'
+import { ShortlistStar } from './ShortlistStar'
 import {
   formatPlaytime,
   formatPriceGBP,
@@ -10,11 +11,17 @@ import {
   cn,
 } from '../../lib/utils'
 import type { GameWithOwnership, Player } from '../../types'
+import type { ShortlistEntry } from '../../hooks/useShortlist'
 
 interface GameRowProps {
   game: GameWithOwnership
   players: Player[]
   selectedPlayerIds: string[]
+  isShortlisted: boolean
+  shortlistEntry: ShortlistEntry | null
+  onShortlistToggle: (gameId: string) => void
+  onShortlistTogglePlayer: (gameId: string, playerName: string) => void
+  onShortlistSetReason: (gameId: string, reason: string) => void
   onClick: () => void
 }
 
@@ -33,7 +40,7 @@ function formatReviewCount(count: number): string {
   return String(count)
 }
 
-export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowProps) {
+export function GameRow({ game, players, selectedPlayerIds, isShortlisted, shortlistEntry, onShortlistToggle, onShortlistTogglePlayer, onShortlistSetReason, onClick }: GameRowProps) {
   const totalPlaytime = game.owners.reduce((sum, o) => sum + o.playtime_hours, 0)
   const modes = getMultiplayerModes(game.categories)
 
@@ -42,6 +49,19 @@ export function GameRow({ game, players, selectedPlayerIds, onClick }: GameRowPr
       onClick={onClick}
       className="group flex items-center gap-3 px-3 py-2 bg-bg-card border border-border rounded-lg hover:bg-bg-card-hover hover:border-border-hover transition-all cursor-pointer"
     >
+      {/* Shortlist Star */}
+      <div className="flex-shrink-0 w-7">
+        <ShortlistStar
+          gameId={game.id}
+          isShortlisted={isShortlisted}
+          entry={shortlistEntry}
+          players={players}
+          onToggle={onShortlistToggle}
+          onTogglePlayer={onShortlistTogglePlayer}
+          onSetReason={onShortlistSetReason}
+        />
+      </div>
+
       {/* Thumbnail */}
       <div className="relative w-[120px] h-[56px] flex-shrink-0 rounded-md overflow-hidden">
         <img

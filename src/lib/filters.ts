@@ -58,7 +58,8 @@ function matchesReleaseDate(releaseDate: string | null, filter: FilterState['rel
 export function applyFilters(
   games: GameWithOwnership[],
   filters: FilterState,
-  tab: AppTab = 'all'
+  tab: AppTab = 'all',
+  shortlistedIds?: Set<string>
 ): GameWithOwnership[] {
   let filtered = games.filter(game => {
     if (!game.supports_linux) return false
@@ -80,6 +81,9 @@ export function applyFilters(
 
     // Treat free games as owned by all for filtering purposes
     const effectiveAllOwn = game.is_free || game.all_selected_own
+
+    // Shortlist filter
+    if (filters.shortlistedOnly && shortlistedIds && !shortlistedIds.has(game.id)) return false
 
     // User filters
     if (filters.ownedByAll && !effectiveAllOwn) return false
