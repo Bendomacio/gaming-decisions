@@ -30,13 +30,17 @@ export function useFilters() {
   const toggleSortBy = useCallback((sort: SortOption) => {
     setFilters(prev => {
       const current = prev.sortBy
-      if (current.includes(sort)) {
-        // Remove it - but keep at least one
-        const next = current.filter(s => s !== sort)
+      if (current[0] === sort) {
+        // Already primary - remove it, promote next or fall back
+        const next = current.slice(1)
         return { ...prev, sortBy: next.length > 0 ? next : ['recommendation'] }
       }
-      // Add to end of chain
-      return { ...prev, sortBy: [...current, sort] }
+      if (current.includes(sort)) {
+        // Already in chain but not primary - promote to front
+        return { ...prev, sortBy: [sort, ...current.filter(s => s !== sort)] }
+      }
+      // Not in chain - add to front as primary
+      return { ...prev, sortBy: [sort, ...current] }
     })
   }, [])
 
