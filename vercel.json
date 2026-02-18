@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/sync-player-counts",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/sync-trending",
