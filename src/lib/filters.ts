@@ -73,6 +73,10 @@ export function applyFilters(
       if (excludedIds?.has(game.id)) return false
     }
 
+    // Max player count filter: hide games that can't fit the selected group
+    const groupSize = filters.selectedPlayers.length
+    if (groupSize > 0 && game.max_players !== null && game.max_players < groupSize) return false
+
     // Game mode filters
     if (!matchesGameModes(game.categories, filters.gameModes)) return false
 
