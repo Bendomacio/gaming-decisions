@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react'
-import { loadConfig } from '../lib/config'
-import type { FilterState, SortOption, ProtonFilter, ReleaseDateFilter } from '../types'
+import { loadConfig, getTabDefaults } from '../lib/config'
+import type { FilterState, SortOption, ProtonFilter, ReleaseDateFilter, AppTab } from '../types'
 
-function buildDefaults(): FilterState {
+function buildDefaults(tab: AppTab = 'all'): FilterState {
   const config = loadConfig()
+  const tabDef = getTabDefaults(tab)
   return {
     selectedPlayers: [],
     ownedByAll: false,
@@ -14,17 +15,29 @@ function buildDefaults(): FilterState {
     linuxOnly: config.defaultLinuxOnly,
     genreTags: [],
     excludeGenreTags: [...config.defaultExcludeTags],
-    sortBy: [config.defaultSortBy],
+    sortBy: [tabDef.sortBy],
     searchQuery: '',
-    gameModes: { ...config.defaultGameModes },
+    gameModes: { ...tabDef.gameModes },
     protonFilter: config.defaultProtonFilter,
     releaseDateFilter: config.defaultReleaseDateFilter,
-    minReviewCount: config.minReviewCount,
+    minReviewCount: tabDef.minReviewCount,
   }
 }
 
 export function useFilters() {
-  const [filters, setFilters] = useState<FilterState>(buildDefaults)
+  const [filters, setFilters] = useState<FilterState>(() => buildDefaults('all'))
+
+  const applyTabDefaults = useCallback((tab: AppTab) => {
+    setFilters(prev => {
+      const tabDef = getTabDefaults(tab)
+      return {
+        ...prev,
+        sortBy: [tabDef.sortBy],
+        gameModes: { ...tabDef.gameModes },
+        minReviewCount: tabDef.minReviewCount,
+      }
+    })
+  }, [])
 
   const setSearch = useCallback((query: string) => {
     setFilters(prev => ({ ...prev, searchQuery: query }))
@@ -128,5 +141,6 @@ export function useFilters() {
     setReleaseDateFilter,
     resetFilters,
     updateSelectedPlayers,
+    applyTabDefaults,
   }
 }

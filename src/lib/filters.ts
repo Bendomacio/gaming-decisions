@@ -134,15 +134,9 @@ export function applyFilters(
     return true
   })
 
-  // Sort - user's sort keys apply on ALL tabs, with tab-specific default appended
+  // Sort - tab defaults are now applied via applyTabDefaults on tab switch
   const selectedCount = filters.selectedPlayers.length
-  const userSort = filters.sortBy
-  const tabDefault: SortOption | null = tab === 'trending' ? 'current_players' :
-                                        tab === 'new' ? 'release_date' : null
-  // For 'new' tab, release_date leads unless user explicitly chose it already
-  const sortKeys = tabDefault && !userSort.includes(tabDefault)
-    ? tab === 'new' ? [tabDefault, ...userSort] : [...userSort, tabDefault]
-    : userSort
+  const sortKeys = filters.sortBy
 
   function compareBySortKey(a: GameWithOwnership, b: GameWithOwnership, sortBy: SortOption): number {
     switch (sortBy) {

@@ -21,6 +21,8 @@ interface DiscoverState {
   results: GameResult[]
 }
 
+type SettingsTab = 'all' | 'trending' | 'new'
+
 export function Admin() {
   const [running, setRunning] = useState(false)
   const [discover, setDiscover] = useState<DiscoverState>({
@@ -35,6 +37,7 @@ export function Admin() {
   // Config state
   const [config, setConfig] = useState<AppConfig>(loadConfig)
   const [configSaved, setConfigSaved] = useState(false)
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>('all')
 
   useEffect(() => {
     pendingRef.current = discover.pendingAppIds
@@ -361,78 +364,117 @@ export function Admin() {
             Changes apply on next page load of the main app.
           </p>
 
-          {/* Min Review Count */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-text-secondary">Minimum Steam Reviews</label>
-            <p className="text-xs text-text-muted">Hide games with fewer reviews than this (0 = show all)</p>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                min={0}
-                max={10000}
-                value={config.minReviewCount}
-                onChange={e => setConfig(prev => ({ ...prev, minReviewCount: Math.max(0, parseInt(e.target.value) || 0) }))}
-                className="w-28 bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-border-accent transition-colors"
-              />
-              <div className="flex gap-1.5">
-                {[0, 50, 150, 500, 1000].map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setConfig(prev => ({ ...prev, minReviewCount: n }))}
-                    className={`${toggleBtn} ${config.minReviewCount === n ? toggleOn : toggleOff}`}
-                  >
-                    {n === 0 ? 'Off' : n}
-                  </button>
-                ))}
+          {/* Per-Tab Settings */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-text-secondary">Per-Tab Defaults</label>
+            <div className="flex gap-1.5">
+              {([
+                ['all', 'All Games'],
+                ['trending', 'Trending'],
+                ['new', 'New Games'],
+              ] as [SettingsTab, string][]).map(([tab, label]) => (
+                <button
+                  key={tab}
+                  onClick={() => setSettingsTab(tab)}
+                  className={`${toggleBtn} ${settingsTab === tab ? toggleOn : toggleOff}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-bg-card border border-border rounded-lg p-4 space-y-4">
+              {/* Min Review Count (per tab) */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-text-secondary">Minimum Steam Reviews</label>
+                <p className="text-xs text-text-muted">Hide games with fewer reviews than this (0 = show all)</p>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={0}
+                    max={10000}
+                    value={config.tabs[settingsTab].minReviewCount}
+                    onChange={e => setConfig(prev => ({
+                      ...prev,
+                      tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], minReviewCount: Math.max(0, parseInt(e.target.value) || 0) } },
+                    }))}
+                    className="w-28 bg-bg-input border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-border-accent transition-colors"
+                  />
+                  <div className="flex gap-1.5">
+                    {[0, 50, 150, 500, 1000].map(n => (
+                      <button
+                        key={n}
+                        onClick={() => setConfig(prev => ({
+                          ...prev,
+                          tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], minReviewCount: n } },
+                        }))}
+                        className={`${toggleBtn} ${config.tabs[settingsTab].minReviewCount === n ? toggleOn : toggleOff}`}
+                      >
+                        {n === 0 ? 'Off' : n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Default Sort */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-text-secondary">Default Sort</label>
-            <div className="flex flex-wrap gap-1.5">
-              {([
-                ['recommendation', 'Recommended'],
-                ['review_score', 'Rating'],
-                ['price_asc', 'Price: Low'],
-                ['current_players', 'Playing Now'],
-                ['name', 'Name'],
-                ['recently_added', 'Recently Added'],
-              ] as [SortOption, string][]).map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => setConfig(prev => ({ ...prev, defaultSortBy: value }))}
-                  className={`${toggleBtn} ${config.defaultSortBy === value ? toggleOn : toggleOff}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Default Sort (per tab) */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-text-secondary">Default Sort</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    ['recommendation', 'Recommended'],
+                    ['review_score', 'Rating'],
+                    ['price_asc', 'Price: Low'],
+                    ['current_players', 'Playing Now'],
+                    ['trending', 'Trending'],
+                    ['release_date', 'Release Date'],
+                    ['name', 'Name'],
+                    ['recently_added', 'Recently Added'],
+                  ] as [SortOption, string][]).map(([value, label]) => (
+                    <button
+                      key={value}
+                      onClick={() => setConfig(prev => ({
+                        ...prev,
+                        tabs: { ...prev.tabs, [settingsTab]: { ...prev.tabs[settingsTab], sortBy: value } },
+                      }))}
+                      className={`${toggleBtn} ${config.tabs[settingsTab].sortBy === value ? toggleOn : toggleOff}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Default Game Modes */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-text-secondary">Default Game Modes</label>
-            <p className="text-xs text-text-muted">Which modes are enabled by default</p>
-            <div className="flex flex-wrap gap-1.5">
-              {([
-                ['multiplayer', 'Multiplayer'],
-                ['coop', 'Co-op'],
-                ['singlePlayer', 'Single Player'],
-                ['localMultiplayer', 'Local MP'],
-              ] as [keyof typeof config.defaultGameModes, string][]).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setConfig(prev => ({
-                    ...prev,
-                    defaultGameModes: { ...prev.defaultGameModes, [key]: !prev.defaultGameModes[key] },
-                  }))}
-                  className={`${toggleBtn} ${config.defaultGameModes[key] ? toggleOn : toggleOff}`}
-                >
-                  {label}
-                </button>
-              ))}
+              {/* Default Game Modes (per tab) */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-text-secondary">Default Game Modes</label>
+                <p className="text-xs text-text-muted">Which modes are enabled by default</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    ['multiplayer', 'Multiplayer'],
+                    ['coop', 'Co-op'],
+                    ['singlePlayer', 'Single Player'],
+                    ['localMultiplayer', 'Local MP'],
+                  ] as [keyof AppConfig['tabs']['all']['gameModes'], string][]).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setConfig(prev => ({
+                        ...prev,
+                        tabs: {
+                          ...prev.tabs,
+                          [settingsTab]: {
+                            ...prev.tabs[settingsTab],
+                            gameModes: { ...prev.tabs[settingsTab].gameModes, [key]: !prev.tabs[settingsTab].gameModes[key] },
+                          },
+                        },
+                      }))}
+                      className={`${toggleBtn} ${config.tabs[settingsTab].gameModes[key] ? toggleOn : toggleOff}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

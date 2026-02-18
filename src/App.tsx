@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from './components/layout/Header'
 import { TabNav } from './components/layout/TabNav'
 import { PlayerSelector } from './components/players/PlayerSelector'
@@ -22,7 +22,7 @@ function App() {
     filters, setSearch, toggleSortBy,
     toggleOwnedByAll, toggleOwnedByNone, toggleFreeOnly, toggleOnSaleOnly, toggleLinuxOnly,
     toggleTag, toggleExcludeTag, toggleGameMode, setProtonFilter,
-    setReleaseDateFilter, resetFilters, updateSelectedPlayers,
+    setReleaseDateFilter, resetFilters, updateSelectedPlayers, applyTabDefaults,
   } = useFilters()
   const {
     shortlistedIds, getEntry, toggleShortlist,
@@ -33,7 +33,12 @@ function App() {
   } = useExcludedGames()
   const { theme, setTheme } = useTheme()
 
-  const [activeTab, setActiveTab] = useState<AppTab>('all')
+  const [activeTab, setActiveTabState] = useState<AppTab>('all')
+
+  const setActiveTab = useCallback((tab: AppTab) => {
+    setActiveTabState(tab)
+    applyTabDefaults(tab)
+  }, [applyTabDefaults])
   const [selectedGame, setSelectedGame] = useState<GameWithOwnership | null>(null)
   const [lastSync, setLastSync] = useState<SyncLog | null>(null)
   const [syncing, setSyncing] = useState(false)
